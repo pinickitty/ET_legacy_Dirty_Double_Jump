@@ -1,0 +1,52 @@
+// Dirty Double Jump - engineer poison gas landmine
+// Models, texture, markers and the selected icon come from NitMod 2.3.5, see
+// models/multiplayer/landmine/CREDITS_poison.txt. Everything else is the stock landmine.
+weaponDef
+{
+	client {
+		weaponConfig		"models/multiplayer/landmine/weapon.cfg"
+		handsModel			"models/multiplayer/landmine/v_landmine_hand.md3"
+
+		weaponIcon			"icons/iconw_landmine"
+		weaponIconScale		1
+		weaponSelectedIcon	"icons/iconw_plandmine_1_select"
+
+		missileModel		"models/multiplayer/landmine/plandmine.md3"
+		missileBouncingSound {
+			default "sound/weapons/landmine/mine_bounce.wav"
+		}
+		missileTrailFunc	"PyroSmokeTrail"
+
+		adjustLean 1 1 1
+		reviveLowerHeight 3.5
+
+		modModel 0			"models/multiplayer/mine_marker/allied_marker2.md3"
+		modModel 1			"models/multiplayer/mine_marker/axis_marker2.md3"
+
+		impactDurationCoeff 3
+		impactMarkMaxRange  -1	// -1 infinite
+		impactSoundRange  400
+		impactParticle    "particles/small_explosion.particle"
+		impactSoundVolume 127
+		impactMarkRadius  64
+		impactSound {
+			default "sound/weapons/landmine/mine_expl.wav"
+			far     "sound/weapons/landmine/mine_expl_far.wav"
+			water   "sound/weapons/grenade/gren_expl_water.wav"
+		}
+		impactMark {
+			default "gfx/damage/burn_med_mrk"
+		}
+
+		firstPerson {
+			model			"models/multiplayer/landmine/v_plandmine.md3"
+
+			dynFov90  -5.0 8.0 0.0
+			dynFov120 -4.0 2.0 0.0
+		}
+
+		thirdPerson {
+			model		"models/multiplayer/landmine/plandmine.md3"
+		}
+	}
+}

@@ -1348,6 +1348,12 @@ static void CG_Missile(centity_t *cent)
 	}
 	weapon = &cg_weapons[s1->weapon];
 
+	// poison gas landmine (Dirty Double Jump): a landmine entity drawn with the poison mine model and markers
+	if (s1->weapon == WP_LANDMINE && LANDMINE_IS_POISON(s1))
+	{
+		weapon = &cg_weapons[WP_POISON_MINE];
+	}
+
 	if (s1->weapon == WP_TRIPMINE)
 	{
 		CG_Tripmine(cent, weapon);

@@ -1,0 +1,14 @@
+Poison gas landmine model, view model, texture, spotted-mine markers and selected-weapon icon
+
+Taken unchanged from nitmod_2.3.5.pk3 (NitMod 2.3.5):
+  models/multiplayer/landmine/plandmine.md3
+  models/multiplayer/landmine/v_plandmine.md3
+  models/multiplayer/landmine/landmine2.jpg
+  models/multiplayer/mine_marker/allied_marker2.md3 / .jpg
+  models/multiplayer/mine_marker/axis_marker2.md3 / .jpg
+  icons/iconw_plandmine_1_select.tga
+
+All credit to the NitMod authors. These files are not covered by the ET: Legacy
+GPL licence; obtain the authors' permission before redistributing them.
+
+weapons/landmine_pgas.weap and scripts/ddj_poison.shader were written for Dirty Double Jump.
