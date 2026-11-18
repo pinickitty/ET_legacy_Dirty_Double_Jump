@@ -2549,7 +2549,7 @@ void G_TempTraceRealHitBox(gentity_t *ent)
 	{
 		hit = &g_entities[list[i]];
 
-		if (hit->s.weapon == WP_DYNAMITE || hit->s.weapon == WP_LANDMINE || hit->s.weapon == WP_SATCHEL)
+		if (hit->s.weapon == WP_DYNAMITE || hit->s.weapon == WP_LANDMINE || hit->s.weapon == WP_SATCHEL || hit->s.weapon == WP_TRIPMINE)
 		{
 			VectorCopy(hit->r.mins, BBoxMinsBackup[counter]);
 			VectorCopy(hit->r.maxs, BBoxMaxsBackup[counter]);

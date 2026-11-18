@@ -1,0 +1,15 @@
+Tripmine model, view model, textures and selected-weapon icon
+
+Taken unchanged from nitmod_2.3.5.pk3 (NitMod 2.3.5):
+  models/multiplayer/tripmine/tripmine.md3
+  models/multiplayer/tripmine/v_tripmine.md3
+  models/weapons2/tripmine/etpub_tripmine.jpg
+  models/weapons2/tripmine/trip_grip.jpg
+  icons/iconw_tripmine_1_select.tga
+
+The texture name suggests the model originally comes from ETPub.
+All credit to the NitMod and ETPub authors. These files are not covered by
+the ET: Legacy GPL licence; obtain the authors' permission before
+redistributing them.
+
+weapons/tripmine.weap was written for Dirty Double Jump.

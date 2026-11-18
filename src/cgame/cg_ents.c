@@ -1260,14 +1260,25 @@ static void CG_Tripmine(centity_t *cent, const weaponInfo_t *weapon)
 		trapAware = qtrue;
 	}
 
-	// the mine sits on the wall, its top facing away from it
+	// the mine sits on the wall, the model's forward axis pointing away from it (along the laser)
 	Com_Memset(&ent, 0, sizeof(ent));
 	VectorMA(cent->lerpOrigin, -TRIPMINE_WALL_OFFSET, s1->origin2, ent.origin);
 	VectorCopy(ent.origin, ent.oldorigin);
 	VectorCopy(cent->lerpOrigin, ent.lightingOrigin);
-	VectorCopy(s1->origin2, ent.axis[2]);
-	PerpendicularVector(ent.axis[0], ent.axis[2]);
-	CrossProduct(ent.axis[2], ent.axis[0], ent.axis[1]);
+	VectorCopy(s1->origin2, ent.axis[0]);
+	if (Q_fabs(ent.axis[0][2]) < 0.9f)
+	{
+		// keep the model upright on walls
+		const vec3_t worldUp = { 0, 0, 1 };
+
+		CrossProduct(worldUp, ent.axis[0], ent.axis[1]);
+		VectorNormalize(ent.axis[1]);
+	}
+	else
+	{
+		PerpendicularVector(ent.axis[1], ent.axis[0]);
+	}
+	CrossProduct(ent.axis[0], ent.axis[1], ent.axis[2]);
 
 	ent.hModel   = weapon->missileModel;
 	ent.renderfx = weapon->missileRenderfx | RF_NOSHADOW | RF_LIGHTING_ORIGIN;

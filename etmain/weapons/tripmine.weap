@@ -1,0 +1,45 @@
+// Dirty Double Jump - engineer tripmine
+// Models, textures and the selected icon come from NitMod 2.3.5 (the texture suggests an ETPub origin),
+// see models/multiplayer/tripmine/CREDITS.txt. Sounds, hands and animations are the stock landmine ones.
+weaponDef
+{
+	client {
+		weaponConfig		"models/multiplayer/landmine/weapon.cfg"
+		handsModel			"models/multiplayer/landmine/v_landmine_hand.md3"
+
+		weaponIcon			"icons/iconw_landmine"
+		weaponIconScale		1
+		weaponSelectedIcon	"icons/iconw_tripmine_1_select"
+
+		missileModel		"models/multiplayer/tripmine/tripmine.md3"
+
+		adjustLean 1 1 1
+		reviveLowerHeight 3.5
+
+		impactDurationCoeff 3
+		impactMarkMaxRange  -1	// -1 infinite
+		impactSoundRange  400
+		impactParticle    "particles/small_explosion.particle"
+		impactSoundVolume 127
+		impactMarkRadius  64
+		impactSound {
+			default "sound/weapons/landmine/mine_expl.wav"
+			far     "sound/weapons/landmine/mine_expl_far.wav"
+			water   "sound/weapons/grenade/gren_expl_water.wav"
+		}
+		impactMark {
+			default "gfx/damage/burn_med_mrk"
+		}
+
+		firstPerson {
+			model			"models/multiplayer/tripmine/v_tripmine.md3"
+
+			dynFov90  -5.0 8.0 0.0
+			dynFov120 -4.0 2.0 0.0
+		}
+
+		thirdPerson {
+			model		"models/multiplayer/tripmine/tripmine.md3"
+		}
+	}
+}
