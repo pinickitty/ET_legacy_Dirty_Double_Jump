@@ -1982,6 +1982,12 @@ gentity_t *weapon_tripmine_fire(gentity_t *ent)
 	G_PreFilledMissileEntity(mine, WP_TRIPMINE, WP_TRIPMINE, ent->s.number, team, ent->client->ps.clientNum, ent, origin, vec3_origin);
 
 	G_SetOrigin(mine, origin);
+
+	// traces skip entities owned by the tracing entity, so while the planter owned the mine his own
+	// pliers went straight through it. Hand it to the world like a landed landmine; kills are still
+	// credited through mine->parent.
+	mine->r.ownerNum = ENTITYNUM_WORLD;
+
 	VectorCopy(normal, mine->s.origin2);    // laser direction
 	vectoangles(normal, mine->s.angles);    // mine faces away from the wall
 	G_SetAngle(mine, mine->s.angles);
