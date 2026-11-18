@@ -644,6 +644,7 @@ generate_configuration() {
         "-DMODNAME=${MODNAME}"
         "-DMODURL=${MODURL}"
         "-DMOD_FOLDER=${MOD_FOLDER}"
+        "-DETL_HIDE_DEVELOPMENT_BUILD=ON"
     )
 
     if [ -n "$TOOLCHAIN_FILE" ]; then

@@ -42,6 +42,10 @@ include(cmake/ETLFunctions.cmake)
 set(MODNAME "legacy" CACHE STRING "Default mod name")
 set(MODURL "www.etlegacy.com" CACHE STRING "Default mod URL")
 set(MOD_FOLDER "${MODNAME}" CACHE STRING "Folder (fs_game) the mod is installed in; client mod translations are enabled there")
+option(ETL_HIDE_DEVELOPMENT_BUILD "Do not mark non-release (untagged) builds as DEVELOPMENT BUILD" OFF)
+if(ETL_HIDE_DEVELOPMENT_BUILD)
+	add_definitions(-DETL_HIDE_DEVELOPMENT_BUILD)
+endif()
 
 #-----------------------------------------------------------------
 # Options

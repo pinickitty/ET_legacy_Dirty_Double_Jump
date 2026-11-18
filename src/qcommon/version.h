@@ -55,6 +55,10 @@ extern const char etlegacy_version_id[];
 #define PRODUCT_BUILD_TIME              ((char *)etlegacy_product_build_time)
 #define PRODUCT_BUILD_FEATURES          ((char *)etlegacy_product_build_features)
 #define ETLEGACY_VERSION_ID             ((char *)etlegacy_version_id)
+#ifdef ETL_HIDE_DEVELOPMENT_BUILD /* set by CMake option ETL_HIDE_DEVELOPMENT_BUILD */
+#define ETLEGACY_VERSION_IS_DEVELOPMENT_BUILD 0
+#else
 #define ETLEGACY_VERSION_IS_DEVELOPMENT_BUILD (ETLEGACY_VERSION_INT % 10000 > 0 /* the last 4 digits ought to be 0 on release builds */)
+#endif
 
 #endif

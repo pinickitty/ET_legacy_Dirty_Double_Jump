@@ -427,7 +427,8 @@ GOTO :EOF
 	-DBUNDLED_OPENSSL=!open_ssl! ^
 	-DFEATURE_SSL=!feature_ssl! ^
 	-DFEATURE_AUTH=!feature_auth! ^
-	-DMOD_FOLDER=!mod_folder!
+	-DMOD_FOLDER=!mod_folder! ^
+	-DETL_HIDE_DEVELOPMENT_BUILD=ON
 
 	IF !mod_only!==1 (
 		SET local_build_string=!local_build_string! ^
