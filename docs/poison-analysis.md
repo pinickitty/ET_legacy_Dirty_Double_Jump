@@ -56,8 +56,9 @@ While `EF_POISONED` is set, and each time the next-tick time has passed:
 - **Self-kill is refused while poisoned** ("Selfkill disabled while you are poisoned.").
 
 ### 1.4 Who gets it (`G_AddClassSpecificTools`)
-- Given at spawn when `g_poison` ≠ 0 **and** the player meets a skill condition (bit `0x10` of the
-  client skill word at `+0xee0`, which is most likely Light Weapons level 4). This was **not confirmed**; see section 4.
+- Given at spawn when `g_poison` ≠ 0 **and** the player has **Light Weapons level 4**, whatever their class.
+  Confirmed in `G_SetPlayerSkill`: NitMod keeps a per-skill bitmask of the levels reached
+  (`0x02` = level 1 … `0x10` = level 4, `0x20` = level 5), and the syringe check reads bit `0x10` of skill 4 (Light Weapons).
 - It is given regardless of class: the check comes after the class-specific tools.
 
 ### 1.5 `g_poison` bits (as far as observed)
@@ -131,9 +132,7 @@ The cloud is the smoke-grenade entity running a poison branch (`weapon_smokeBomb
 
 ## 4. Open points
 
-- **Syringe skill condition:** the exact condition for the poison syringe (field `+0xee0` bit `0x10`) is
-  not confirmed. It matches the shape of other skill-level checks, most likely Light Weapons level 4.
-  Choosing who gets it is a design decision for the port anyway.
+- **Syringe skill condition:** resolved: Light Weapons level 4 (see 1.4). The port uses this rule.
 - **Weapon values:** the gas damage and splash radius come from NitMod's weapon table, which was not read.
   Sensible defaults need choosing (for example damage 10–15 per 0.8 s tick, radius around 250).
 - **Client screen effect:** apart from the sprite and the sound, the client-side "poisoned" view effect
