@@ -1066,11 +1066,24 @@ qboolean CG_SpawnSmokeSprite(centity_t *cent, float dist)
 		VectorCopy(cent->origin2, smokesprite->pos);
 		VectorCopy(bytedirs[Q_LCG(cent->currentState.time + cent->miscInt /*sprite number*/) % NUMVERTEXNORMALS], smokesprite->dir);
 		smokesprite->dir[2]   *= .5f;
-		smokesprite->size      = 16.f;
-		smokesprite->colour[0] = .35f; // + crandom() * .1f;
-		smokesprite->colour[1] = smokesprite->colour[0];
-		smokesprite->colour[2] = smokesprite->colour[0];
-		smokesprite->colour[3] = .8f;
+		if (LANDMINE_IS_POISON(&cent->currentState))
+		{
+			// Dirty Double Jump - poison gas cloud: thin, dark green puffs that start smaller,
+			// matching the look of the NitMod poison gas
+			smokesprite->size      = 7.f;
+			smokesprite->colour[0] = .004f;
+			smokesprite->colour[1] = .3f;
+			smokesprite->colour[2] = 0.f;
+			smokesprite->colour[3] = .25f;
+		}
+		else
+		{
+			smokesprite->size      = 16.f;
+			smokesprite->colour[0] = .35f; // + crandom() * .1f;
+			smokesprite->colour[1] = smokesprite->colour[0];
+			smokesprite->colour[2] = smokesprite->colour[0];
+			smokesprite->colour[3] = .8f;
+		}
 
 		// Advance sprite
 		if (!CG_SmokeSpritePhysics(smokesprite, dist))

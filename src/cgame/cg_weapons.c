@@ -50,7 +50,7 @@ weapon_t weapBanksMultiPlayer[MAX_WEAP_BANKS_MP][MAX_WEAPS_IN_BANK_MP] =
 	{ WP_GRENADE_LAUNCHER, WP_GRENADE_PINEAPPLE, 0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ WP_MEDIC_SYRINGE,    WP_PLIERS,            WP_SMOKE_MARKER, WP_SMOKE_BOMB,   0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ WP_DYNAMITE,         WP_MEDKIT,            WP_AMMO,         WP_SATCHEL,      WP_SATCHEL_DET, 0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_LANDMINE,         WP_MEDIC_ADRENALINE,  WP_TRIPMINE,     WP_POISON_MINE,0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_LANDMINE,         WP_MEDIC_ADRENALINE,  WP_POISON_MINE,  WP_TRIPMINE,   0,             0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ WP_BINOCULARS,       0,                    0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ 0,                   0,                    0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 };
@@ -4383,20 +4383,12 @@ void CG_WeaponBank_f(void)
 		newWeapon = cg.lastWeapSelInBank[bank];
 		CG_WeaponIndex(newWeapon, &bank, &cycle);
 
+		// Dirty Double Jump - getNextWeapInBank() already steps one slot forward, so stepping here
+		// as well skipped every other slot (bank 7: tripmine jumped straight back to the landmine,
+		// passing over the poison mine). Stay on the current slot when re-pressing the same bank.
 		if (bank != curbank)
 		{
 			cycle -= 1;
-		}
-		else
-		{
-			if (cycle + 1 >= MAX_WEAPS_IN_BANK_MP)
-			{
-				cycle = 0;
-			}
-			else
-			{
-				cycle += 1;
-			}
 		}
 	}
 
