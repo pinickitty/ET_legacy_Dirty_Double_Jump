@@ -2247,6 +2247,7 @@ void G_TripmineExpire(gentity_t *self);
 #define POISON_NO_OWN_CURE   8     ///< health packs dropped by your own poisoner don't cure you
 
 void G_PoisonPlayer(gentity_t *victim, gentity_t *attacker);
+gentity_t *Weapon_PoisonSyringe(gentity_t *ent);
 void G_CurePoison(gentity_t *ent);
 void G_PoisonThink(gentity_t *ent);
 qboolean G_PoisonCuredBy(gentity_t *ent, gentity_t *healer);

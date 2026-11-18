@@ -1,0 +1,45 @@
+// Dirty Double Jump - poison syringe (Light Weapons level 4, g_poison)
+// The stock syringe models with the NitMod 2.3.5 poison skins and textures, see
+// models/multiplayer/syringe/CREDITS_poison.txt. Everything else is the stock syringe.
+weaponDef
+{
+	client {
+		weaponConfig		"models/multiplayer/syringe/weapon.cfg"
+		handsModel			"models/multiplayer/syringe/v_syringe_hand.md3"
+
+		weaponIcon			"icons/iconw_syringe"
+		weaponIconScale		1
+		weaponSelectedIcon	"icons/iconw_syringe_1_select"
+
+		adjustLean 1 1 1
+		reviveLowerHeight 3.35
+
+		modModel 0		"models/multiplayer/syringe/poison"
+
+		firstPerson {
+			model		"models/multiplayer/syringe/v_syringe.md3"
+			axisskin	"models/multiplayer/syringe/poison_axis.skin"
+			alliedskin	"models/multiplayer/syringe/poison_allied.skin"
+
+			dynFov90 -3.0 0.0 0.0
+			dynFov120 -4.0 0.0 0.0
+
+			weaponLink
+			{
+				part 0
+				{
+					tag			"tag_weapon"
+					model		"models/multiplayer/syringe/v_syringe_barrel.md3"
+					axisskin	"models/multiplayer/syringe/poison_axis.skin"
+					alliedskin	"models/multiplayer/syringe/poison_allied.skin"
+				}
+			}
+		}
+
+		thirdPerson {
+			model		"models/multiplayer/syringe/syringe.md3"
+			axisskin	"models/multiplayer/syringe/poison_axis.skin"
+			alliedskin	"models/multiplayer/syringe/poison_allied.skin"
+		}
+	}
+}

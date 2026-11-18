@@ -3065,6 +3065,7 @@ static void registerWeaponConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 55
 	lua_regconstinteger(vm->L, WP_TRIPMINE);             // 56
 	lua_regconstinteger(vm->L, WP_POISON_MINE);          // 57
+	lua_regconstinteger(vm->L, WP_POISON_SYRINGE);       // 58
 	lua_regconstinteger(vm->L, WP_NUM_WEAPONS);
 }
 

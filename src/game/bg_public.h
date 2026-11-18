@@ -918,8 +918,9 @@ typedef enum
 	// Dirty Double Jump weapons
 	WP_TRIPMINE,               ///< 56 Engineer wall-mounted laser mine
 	WP_POISON_MINE,            ///< 57 Engineer poison gas landmine (thrown; becomes a WP_LANDMINE entity with LANDMINE_IS_POISON)
+	WP_POISON_SYRINGE,         ///< 58 Poison syringe, any class with Light Weapons level 4 (g_poison)
 
-	WP_NUM_WEAPONS             ///< 58
+	WP_NUM_WEAPONS             ///< 59
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -2032,6 +2033,7 @@ typedef enum item_s
 	ITEM_BLUE_FLAG,
 	ITEM_WEAPON_TRIPMINE,          ///< Dirty Double Jump - kept last so existing item indexes don't move
 	ITEM_WEAPON_POISON_MINE,       ///< Dirty Double Jump
+	ITEM_WEAPON_POISON_SYRINGE,    ///< Dirty Double Jump
 	ITEM_MAX_ITEMS,
 
 } item_t;

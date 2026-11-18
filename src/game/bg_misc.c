@@ -222,6 +222,7 @@ weaponTable_t weaponTable[WP_NUM_WEAPONS] =
 	{ WP_AIRSTRIKE,            ITEM_WEAPON_AIRSTRIKE,             TEAM_FREE,   SK_SIGNALS,                                  WP_NONE,                WP_NONE,                 WP_NONE,  WP_AIRSTRIKE,         WP_AIRSTRIKE,         400,   0,     0,          400,         400,         WEAPON_TYPE_NONE,                          WEAPON_FIRING_MODE_NONE,                                     WEAPON_ATTRIBUT_CHARGE_TIME | WEAPON_ATTRIBUT_SHAKE,                                                                                                         0,      0,     "",                    WS_AIRSTRIKE,       qfalse, qfalse, 1,      0,   1,      0,         50,            1000,        0,          0,                0,      0,       0,               250,            250,             0,                0,              0,        { 14, 6, -4 },    0,                 { 0, 0 },       { 0, 0 },      "air strike",      "airstrike",             SK_FIELDOPS_FIRE_SUPPORT_STAMINA, {1, .66f},      MOD_AIRSTRIKE,            MOD_AIRSTRIKE            },  // WP_AIRSTRIKE             // 55   // airstrike shell bomb
 	{ WP_TRIPMINE,             ITEM_WEAPON_TRIPMINE,              TEAM_FREE,   SK_EXPLOSIVES_AND_CONSTRUCTION,              WP_NONE,                WP_NONE,                 WP_NONE,  WP_TRIPMINE,          WP_TRIPMINE,          0,     0,     0,          250,         250,         WEAPON_TYPE_NONE,                          WEAPON_FIRING_MODE_ONE_SHOT,                                 WEAPON_ATTRIBUT_CHARGE_TIME | WEAPON_ATTRIBUT_KEEP_DESGUISE | WEAPON_ATTRIBUT_NEVER_LOST_DESGUISE | WEAPON_ATTRIBUT_FIRE_UNDERWATER | WEAPON_ATTRIBUT_SHAKE, 0,      0,     "",                    WS_TRIPMINE,        qtrue,  qfalse, 1,      0,   1,      100,       100,           100,         0,          0,                0,      0,       0,               250,            250,             0,                0,              0,        { 14, 6, -4 },    0,                 { 0, 0 },       { 0, 0 },      "tripmine",        "tripmine",                SK_ENGINEER_STAMINA,              {.5f, .33f},    MOD_TRIPMINE,             MOD_TRIPMINE             },  // WP_TRIPMINE              // 56   // Dirty Double Jump: wall-mounted laser mine, placed (not thrown); model from NitMod 2.3.5 (see models/multiplayer/tripmine/CREDITS.txt)
 	{ WP_POISON_MINE,          ITEM_WEAPON_POISON_MINE,           TEAM_FREE,   SK_EXPLOSIVES_AND_CONSTRUCTION,              WP_NONE,                WP_NONE,                 WP_NONE,  WP_POISON_MINE,       WP_POISON_MINE,       0,     0,     0,          250,         250,         WEAPON_TYPE_NONE,                          WEAPON_FIRING_MODE_THROWABLE | WEAPON_FIRING_MODE_ONE_SHOT,  WEAPON_ATTRIBUT_CHARGE_TIME | WEAPON_ATTRIBUT_KEEP_DESGUISE | WEAPON_ATTRIBUT_NEVER_LOST_DESGUISE | WEAPON_ATTRIBUT_FIRE_UNDERWATER | WEAPON_ATTRIBUT_SHAKE, 0,      0,     "",                    WS_LANDMINE,        qtrue,  qfalse, 1,      0,   1,      100,       100,           100,         0,          0,                0,      0,       0,               250,            250,             0,                0,              0,        { 14, 6, -4 },    0,                 { 0, 0 },       { 0, 0 },      "landmine",        "landmine_pgas",              SK_ENGINEER_STAMINA,              {.5f, .33f},    MOD_LANDMINE,             MOD_LANDMINE             },  // WP_POISON_MINE           // 57   // Dirty Double Jump: thrown like a landmine (same charge), the entity becomes a poison WP_LANDMINE
+	{ WP_POISON_SYRINGE,       ITEM_WEAPON_POISON_SYRINGE,        TEAM_FREE,   SK_LIGHT_WEAPONS,                            WP_NONE,                WP_NONE,                 WP_NONE,  WP_POISON_SYRINGE,    WP_POISON_SYRINGE,     1,     0,     0,          0,           0,           WEAPON_TYPE_SYRINGUE,                      WEAPON_FIRING_MODE_MANUAL,                                   WEAPON_ATTRIBUT_FIRE_UNDERWATER,                                                                                                                             0,      0,     "POISON",              WS_SYRINGE,         qtrue,  qfalse, 8,      1,   1,      0,         50,            500,         0,          0,                0,      0,       0,               250,            250,             0,                0,              0,        { 14, 6, -4 },    0,                 { 0, 0 },       { 0, 0 },      "",                "poison",                0,                                {1, 1},         MOD_POISON,               MOD_POISON               },  // WP_POISON_SYRINGE        // 58   // Dirty Double Jump: injects lasting poison (EF_POISONED); NitMod ammo 4 (max 8), 500 ms between shots
 };
 
 /**
@@ -336,7 +337,7 @@ modTable_t modTable[MOD_NUM_MODS] =
 	{ MOD_MP34,                               WP_MP34,                 qtrue,     qfalse,     WEAPON_CLASS_FOR_MOD_NO,        qfalse,      "was killed by",             "'s MP 34",                       "killed himself",                        NULL,                                     "MOD_MP34",                               SK_LIGHT_WEAPONS,                            3.f,             0.f,             {5.f, 3.f, 3.f, 3.f}, qtrue,       "",                    2,            WS_MP34            },
 	{ MOD_TRIPMINE,                           WP_TRIPMINE,             qfalse,    qtrue,      WEAPON_CLASS_FOR_MOD_EXPLOSIVE, qfalse,      "tripped over",              "'s Tripmine",                    "forgot where his tripmine was",         NULL,                                     "MOD_TRIPMINE",                           SK_EXPLOSIVES_AND_CONSTRUCTION,              4.f,             3.f,             {0.f, 0.f, 0.f, 0.f}, qfalse,      "tripmine",            3,            WS_TRIPMINE        },
 	{ MOD_POISONGASMINE,                      WP_POISON_MINE,          qfalse,    qfalse,     WEAPON_CLASS_FOR_MOD_NO,        qfalse,      "choked on",                 "'s poison gas landmine",         "choked on his own poison gas landmine", NULL,                                     "MOD_POISONGASMINE",                      SK_EXPLOSIVES_AND_CONSTRUCTION,              3.f,             3.f,             {0.f, 0.f, 0.f, 0.f}, qfalse,      "poison gas landmine", 3,            WS_LANDMINE        },
-	{ MOD_POISON,                             WP_MEDIC_SYRINGE,        qfalse,    qfalse,     WEAPON_CLASS_FOR_MOD_NO,        qfalse,      "was poisoned by",           "",                               "poisoned himself",                      "died of poison",                         "MOD_POISON",                             SK_LIGHT_WEAPONS,                            3.f,             0.f,             {0.f, 0.f, 0.f, 0.f}, qfalse,      "poison",              0,            WS_SYRINGE         },
+	{ MOD_POISON,                             WP_POISON_SYRINGE,       qfalse,    qfalse,     WEAPON_CLASS_FOR_MOD_NO,        qfalse,      "was poisoned by",           "",                               "poisoned himself",                      "died of poison",                         "MOD_POISON",                             SK_LIGHT_WEAPONS,                            3.f,             0.f,             {0.f, 0.f, 0.f, 0.f}, qfalse,      "poison",              0,            WS_SYRINGE         },
 };
 
 // *INDENT-ON*
@@ -2451,6 +2452,27 @@ gitem_t bg_itemlist[] =
 		7,
 		IT_WEAPON,
 		WP_POISON_MINE,
+		PW_NONE,
+#ifdef CGAMEDLL
+		{ 0, { 0 }, { 0 } },
+#endif
+	},
+	// weapon_poison_syringe (Dirty Double Jump)
+	{
+		ITEM_WEAPON_POISON_SYRINGE,
+		"weapon_poison_syringe",
+		"",
+		{
+			"models/multiplayer/syringe/syringe.md3",
+			"models/multiplayer/syringe/v_syringe.md3",
+			0
+		},
+		"icons/iconw_syringe_1",     // icon
+		"icons/ammo2",               // ammo icon
+		"Poison Syringe",            // pickup
+		50,                          // this should never be picked up
+		IT_WEAPON,
+		WP_POISON_SYRINGE,
 		PW_NONE,
 #ifdef CGAMEDLL
 		{ 0, { 0 }, { 0 } },

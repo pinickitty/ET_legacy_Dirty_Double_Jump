@@ -492,6 +492,53 @@ static qboolean G_TrySyringeHeal(gentity_t *healer, gentity_t *target, qboolean 
 }
 
 /**
+ * @brief Dirty Double Jump - poison syringe: inject a living player within reach with lasting poison
+ * (EF_POISONED). Teammates only when friendly fire is on; a missed or refused injection is refunded.
+ * @param[in,out] ent
+ * @return NULL (no projectile)
+ */
+gentity_t *Weapon_PoisonSyringe(gentity_t *ent)
+{
+	vec3_t    end;
+	trace_t   tr;
+	gentity_t *traceEnt;
+	int       clip = GetWeaponTableData(WP_POISON_SYRINGE)->clipIndex;
+
+	AngleVectors(ent->client->ps.viewangles, forward, right, up);
+	CalcMuzzlePointForActivate(ent, forward, right, up, muzzleTrace);
+	VectorMA(muzzleTrace, CH_REVIVE_DIST, forward, end);
+
+	G_HistoricalTrace(ent, &tr, muzzleTrace, NULL, NULL, end, ent->s.number, MASK_SHOT);
+
+	if (tr.startsolid)
+	{
+		VectorMA(muzzleTrace, 8, forward, end);
+		trap_Trace(&tr, muzzleTrace, NULL, NULL, end, ent->s.number, MASK_SHOT);
+	}
+
+	if (tr.fraction == 1.0f || tr.entityNum >= MAX_CLIENTS)
+	{
+		ent->client->ps.ammoclip[clip] += 1;    // missed: give it back
+		return NULL;
+	}
+
+	traceEnt = &g_entities[tr.entityNum];
+
+	if (!traceEnt->client || traceEnt->health <= 0 || traceEnt->client->ps.pm_type == PM_DEAD ||
+	    traceEnt->client->ps.powerups[PW_INVULNERABLE] ||                                                  // spawn protected
+	    (!G_FriendlyFireOn() && traceEnt->client->sess.sessionTeam == ent->client->sess.sessionTeam))      // no team poisoning without friendly fire
+	{
+		ent->client->ps.ammoclip[clip] += 1;
+		return NULL;
+	}
+
+	G_PoisonPlayer(traceEnt, ent);
+	G_Sound(traceEnt, G_SoundIndex("sound/player/gasp.wav"));
+
+	return NULL;
+}
+
+/**
 * @brief Shoot the syringe, do the old lazarus bit
 *
 * @param[in,out] ent
@@ -4608,6 +4655,8 @@ weapFireTable_t weapFireTable[] =
     { WP_TRIPMINE,             weapon_tripmine_fire,        G_TripmineExpire,              NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_CORPSE, TR_STATIONARY,  0,                     { { -3.f, -3.f, -3.f }, { 3.f, 3.f, 3.f } },     { { -12.f, -12.f, -12.f }, { 12.f, 12.f, 12.f } },     MASK_MISSILESHOT, 15000,     0,       0,     0,        20,          },
     // Dirty Double Jump - poison landmine: identical to WP_LANDMINE except the fire function
     { WP_POISON_MINE,          weapon_poisonmine_fire,      DynaSink,                   NULL,               ET_MISSILE,            EF_BOUNCE_HALF | EF_BOUNCE, SVF_BROADCAST,                CONTENTS_CORPSE, TR_GRAVITY,     MISSILE_PRESTEP_TIME,  { { -4.f, -4.f, 0.f }, { 4.f, 4.f, 10.f } },     { { -16.f, -16.f, 0.f }, { 16.f, 16.f, 16.f } }, MASK_MISSILESHOT, 15000,     0,       5,     16500,    20,          },
+    // Dirty Double Jump - poison syringe: like WP_MEDIC_SYRINGE, a hitscan injection
+    { WP_POISON_SYRINGE,       Weapon_PoisonSyringe,        NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,                     { { 0, 0, 0 }, { 0, 0, 0 } },                    { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,         0,       0,     0,        0,           },
 };
 // *INDENT-ON*
 

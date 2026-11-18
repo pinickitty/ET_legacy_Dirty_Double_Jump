@@ -1385,6 +1385,13 @@ void SetWolfSpawnWeapons(gclient_t *client)
 			AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse);
 		}
 	}
+
+	// Dirty Double Jump - poison syringe for any class at Light Weapons level 4 when g_poison is on (NitMod rule).
+	// NitMod gives 4 injections (3 spare + 1 loaded), up to 8 with ammo packs.
+	if (g_poison.integer && client->sess.skill[SK_LIGHT_WEAPONS] >= 4)
+	{
+		AddWeaponToPlayer(client, WP_POISON_SYRINGE, 3, 1, qfalse);
+	}
 }
 
 /**
