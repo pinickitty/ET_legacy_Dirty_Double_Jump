@@ -119,6 +119,7 @@ vmCvar_t pmove_msec;
 
 vmCvar_t g_airJump;
 vmCvar_t g_airJumpScale;
+vmCvar_t g_tripmines;
 
 vmCvar_t g_scriptName; // name of script file to run (instead of default for that map)
 
@@ -471,6 +472,7 @@ cvarTable_t gameCvarTable[] =
 	{ &pmove_msec,                        "pmove_msec",                        "8",                          CVAR_SYSTEMINFO,                                 0, qfalse, qfalse },
 	{ &g_airJump,                         "g_airJump",                         "0",                          CVAR_SYSTEMINFO,                                 0, qfalse, qfalse },     // 0 = off, 1 = anytime, 2 = only while rising
 	{ &g_airJumpScale,                    "g_airJumpScale",                    "1.4",                        CVAR_SYSTEMINFO,                                 0, qfalse, qfalse },     // air jump velocity as a multiple of JUMP_VELOCITY
+	{ &g_tripmines,                       "g_tripmines",                       "0",                          CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qfalse },     // 0 = off, 1 = engineers spawn with a tripmine
 
 	{ &g_scriptName,                      "g_scriptName",                      "",                           CVAR_CHEAT,                                      0, qfalse, qfalse },
 

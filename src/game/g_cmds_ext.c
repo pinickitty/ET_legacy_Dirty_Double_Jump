@@ -1452,6 +1452,7 @@ const unsigned int cQualifyingShots[WS_MAX] =
 	30,     // 25 WS_K43
 	30,     // 26 WS_MP34
 	5,      // 27 WS_SYRINGE
+	10,     // 28 WS_TRIPMINE
 };
 
 /**

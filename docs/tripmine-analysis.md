@@ -124,3 +124,24 @@ A port is a new weapon, not a movement tweak like the air jump, so it is much la
 
 Because both cgame and qagame ship in our mod, the new weapon/entity numbers stay inside the mod and
 need no engine or protocol change. Clients must have the matching pk3, which the pure server enforces anyway.
+
+## 8. Decisions for the ET Legacy port (branch `ddj001`)
+
+- **Entity model:** the mine is an `ET_MISSILE` with `MOD_TRIPMINE`, like ETL's landmine, satchel and
+  dynamite, rather than a new entity type. The shared `entityType_t` in `q_shared.h` is therefore
+  unchanged. ETL already notes the obsolete `ET_BOMB` slot as "tripmines".
+- **Numbers:**
+  - `WP_TRIPMINE` = 56
+  - `MOD_TRIPMINE` follows `MOD_MP34`
+  - `WS_TRIPMINE` = 28
+  - `ITEM_WEAPON_TRIPMINE` is the last item, so no existing item index moves
+- **Switch:** `g_tripmines` (default 0, latched). Engineers only get the weapon at spawn when it is 1.
+  NitMod has no such switch.
+- **Enemy visibility:** this replaces NitMod's unconfirmed client flag (section 6) with ETL's own
+  landmine rules:
+  - Own team and spectators always see the mine and beam.
+  - Enemies with Battle Sense *Trap Awareness* see it within 256 units, as with landmines.
+  - A mine spotted by a Covert Ops with binoculars is shown to the enemy team, as with landmines.
+- **Friendly fire:** NitMod's `g_friendlyFire` bit-128 rule is dropped. Teammates never trigger
+  their team's mine; the owner and enemies do.
+- **Assets:** until the mine has its own model it reuses the stock landmine `.weap`, models and icons.

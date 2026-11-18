@@ -914,7 +914,10 @@ typedef enum
 	WP_MP34,                   ///< 54	Axis Sten alternative
 	WP_AIRSTRIKE,              ///< 55
 
-	WP_NUM_WEAPONS             ///< 56
+	// Dirty Double Jump weapons
+	WP_TRIPMINE,               ///< 56 Engineer wall-mounted laser mine
+
+	WP_NUM_WEAPONS             ///< 57
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -1143,6 +1146,8 @@ typedef enum
 	MOD_BAZOOKA, // Allied panzerfaust
 	MOD_BACKSTAB,
 	MOD_MP34, // Allied Sten alternative
+
+	MOD_TRIPMINE, // Engineer tripmine (Dirty Double Jump)
 
 	MOD_NUM_MODS
 
@@ -1863,6 +1868,7 @@ typedef enum extWeaponStats_e
 	WS_K43,            ///< 25
 	WS_MP34,           ///< 26
 	WS_SYRINGE,        ///< 27
+	WS_TRIPMINE,       ///< 28   -- Engineer tripmine (Dirty Double Jump)
 
 	WS_MAX
 } extWeaponStats_t;
@@ -2006,6 +2012,7 @@ typedef enum item_s
 	ITEM_AMMO_30CAL_LARGE,
 	ITEM_RED_FLAG,
 	ITEM_BLUE_FLAG,
+	ITEM_WEAPON_TRIPMINE,          ///< Dirty Double Jump - kept last so existing item indexes don't move
 	ITEM_MAX_ITEMS,
 
 } item_t;

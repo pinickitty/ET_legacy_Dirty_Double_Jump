@@ -1354,6 +1354,12 @@ void SetWolfSpawnWeapons(gclient_t *client)
 		if (BG_IsSkillAvailable(client->sess.skill, classInfo->classMiscWeapons[i].skill, classInfo->classMiscWeapons[i].minSkillLevel)
 		    && client->sess.skill[classInfo->classMiscWeapons[i].skill] >= classInfo->classMiscWeapons[i].minSkillLevel)
 		{
+			// tripmines are optional (Dirty Double Jump)
+			if (weaponClassInfo->weapon == WP_TRIPMINE && !g_tripmines.integer)
+			{
+				continue;
+			}
+
 			// special check for riflenade, we need the launcher to use it
 			if (GetWeaponTableData(weaponClassInfo->weapon)->type & WEAPON_TYPE_RIFLENADE)
 			{
