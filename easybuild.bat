@@ -268,10 +268,14 @@ GOTO:EOF
 		SET generator_platform=Win32
 	)
 
+	:: Strip a trailing backslash, otherwise "dir\" escapes the closing quote
+	set "source_dir=%~2"
+	IF "!source_dir:~-1!"=="\" SET "source_dir=!source_dir:~0,-1!"
+
 	set build_string=
 	CALL:GENERATECMAKE build_string
-	cmake !generator! !platform_toolset! -A !generator_platform! %build_string% "%~2"
-	ECHO cmake !generator! !platform_toolset! -A !generator_platform! %build_string% "%~2"
+	cmake !generator! !platform_toolset! -A !generator_platform! %build_string% "!source_dir!"
+	ECHO cmake !generator! !platform_toolset! -A !generator_platform! %build_string% "!source_dir!"
 GOTO:EOF
 
 :OPENPROJECT
