@@ -50,7 +50,7 @@ weapon_t weapBanksMultiPlayer[MAX_WEAP_BANKS_MP][MAX_WEAPS_IN_BANK_MP] =
 	{ WP_GRENADE_LAUNCHER, WP_GRENADE_PINEAPPLE, 0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ WP_MEDIC_SYRINGE,    WP_PLIERS,            WP_SMOKE_MARKER, WP_SMOKE_BOMB,   0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ WP_DYNAMITE,         WP_MEDKIT,            WP_AMMO,         WP_SATCHEL,      WP_SATCHEL_DET, 0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_LANDMINE,         WP_MEDIC_ADRENALINE,  WP_TRIPMINE,     0,            0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_LANDMINE,         WP_MEDIC_ADRENALINE,  WP_TRIPMINE,     WP_POISON_MINE,0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ WP_BINOCULARS,       0,                    0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 	{ 0,                   0,                    0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 };
@@ -1098,6 +1098,7 @@ static int CG_DefaultAnimFrameForWeapon(int weapon)
 	case WP_SATCHEL:
 	case WP_LANDMINE:
 	case WP_TRIPMINE:
+	case WP_POISON_MINE:
 		frame = 8;
 		break;
 	case WP_SATCHEL_DET:
@@ -1546,6 +1547,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			break;
 		case WP_LANDMINE:
 		case WP_TRIPMINE:
+		case WP_POISON_MINE:
 			// dont show drop after attack
 			if ((cg.predictedPlayerState.weaponstate == WEAPON_DROPPING && cent->firedTime > 0))
 			{
@@ -1639,6 +1641,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			break;
 		case WP_LANDMINE:
 		case WP_TRIPMINE:
+		case WP_POISON_MINE:
 			if ((cg.time > (cent->firedTime + 80)) && (cg.time < (cent->firedTime + 700)))
 			{
 				return;
@@ -1795,6 +1798,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		// fixup 3P landmine model (rotate, translate, rescale)
 		case WP_LANDMINE:
 		case WP_TRIPMINE:
+		case WP_POISON_MINE:
 		{
 			// rotate
 			AxisToAngles(gun.axis, angles);
@@ -4469,7 +4473,7 @@ void CG_OutOfAmmoChange(qboolean allowForceSwitch)
 
 	if (allowForceSwitch)
 	{
-		if ((cg.weaponSelect == WP_LANDMINE || cg.weaponSelect == WP_TRIPMINE || cg.weaponSelect == WP_DYNAMITE) && CG_WeaponSelectable(WP_PLIERS, qfalse))
+		if ((cg.weaponSelect == WP_LANDMINE || cg.weaponSelect == WP_TRIPMINE || cg.weaponSelect == WP_POISON_MINE || cg.weaponSelect == WP_DYNAMITE) && CG_WeaponSelectable(WP_PLIERS, qfalse))
 		{
 			CG_FinishWeaponChange(cg.predictedPlayerState.weapon, WP_PLIERS);
 			return;

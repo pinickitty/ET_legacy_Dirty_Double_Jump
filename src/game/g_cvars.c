@@ -124,6 +124,9 @@ vmCvar_t team_maxTripmines;
 vmCvar_t g_tripmineTimeout;
 vmCvar_t g_tripmineDebug;
 vmCvar_t g_tripmineArmTime;
+vmCvar_t g_poisonMines;
+vmCvar_t g_poisonGasDamage;
+vmCvar_t g_poisonGasRadius;
 
 vmCvar_t g_scriptName; // name of script file to run (instead of default for that map)
 
@@ -481,6 +484,9 @@ cvarTable_t gameCvarTable[] =
 	{ &g_tripmineTimeout,                 "g_tripmineTimeout",                 "1",                          0,                                               0, qfalse, qfalse },     // 1 = remove a player's tripmines when he leaves or changes team
 	{ &g_tripmineArmTime,                     "g_tripmineArmTime",                     "3000",                          0,                                               0, qfalse, qfalse },     // ms between "Tripmine armed" and the laser going live (time for the engineer to step out of it), min 250
 	{ &g_tripmineDebug,                    "g_tripmineDebug",                    "0",                          0,                                               0, qfalse, qfalse },     // 1 = print tripmine placing/arming/trigger steps to the server console
+	{ &g_poisonMines,                     "g_poisonMines",                     "0",                          CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qfalse },     // 0 = off, 1 = engineers spawn with a poison gas landmine
+	{ &g_poisonGasDamage,                 "g_poisonGasDamage",                 "12",                         0,                                               0, qfalse, qfalse },     // poison gas damage per 800 ms tick at the centre of the cloud
+	{ &g_poisonGasRadius,                 "g_poisonGasRadius",                 "250",                        0,                                               0, qfalse, qfalse },     // radius in which poison gas does damage
 
 	{ &g_scriptName,                      "g_scriptName",                      "",                           CVAR_CHEAT,                                      0, qfalse, qfalse },
 

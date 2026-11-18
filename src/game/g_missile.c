@@ -1599,6 +1599,149 @@ void LandMineTrigger(gentity_t *self)
 	self->s.effect1Time = 2;    // triggered
 	// communicate trigger time to client
 	self->s.time = level.time;
+
+	// poison landmine (Dirty Double Jump): no blast, it releases poison gas a moment later
+	if (LANDMINE_IS_POISON(&self->s))
+	{
+		self->nextthink = level.time + POISONMINE_RELEASE_DELAY;
+		self->think     = G_PoisonMineRelease;
+	}
+}
+
+/*
+======================================================================
+POISON GAS LANDMINE (Dirty Double Jump)
+
+A triggered poison landmine is replaced by a poison gas cloud. The cloud is a
+smoke grenade entity (WP_SMOKE_BOMB, so it grows, lasts and fades exactly like
+ETL smoke and blocks vision the same way) carrying the poison marker; on top of
+the smoke behaviour it damages players inside it every POISONGAS_TICK ms.
+======================================================================
+*/
+
+/**
+ * @brief G_PoisonGasDamage hurts the players inside a poison gas cloud
+ * @param[in] gas
+ */
+static void G_PoisonGasDamage(gentity_t *gas)
+{
+	float     radius = g_poisonGasRadius.value;
+	int       damage = g_poisonGasDamage.integer;
+	int       i;
+	gentity_t *target;
+	float     dist;
+	int       dmg;
+
+	if (radius <= 0 || damage <= 0)
+	{
+		return;
+	}
+
+	for (i = 0; i < level.maxclients; i++)
+	{
+		target = &g_entities[i];
+
+		if (!target->inuse || !target->client || target->health <= 0 || !target->takedamage)
+		{
+			continue;
+		}
+
+		if (target->client->sess.sessionTeam != TEAM_AXIS && target->client->sess.sessionTeam != TEAM_ALLIES)
+		{
+			continue;
+		}
+
+		dist = VectorDistance(gas->r.currentOrigin, target->r.currentOrigin);
+		if (dist >= radius)
+		{
+			continue;
+		}
+
+		// gas doesn't go through walls
+		if (!CanDamage(target, gas->r.currentOrigin))
+		{
+			continue;
+		}
+
+		dmg = (int)(damage * (1.f - dist / radius) + 0.5f);
+		if (dmg < 1)
+		{
+			dmg = 1;
+		}
+
+		G_Damage(target, gas, gas->parent, NULL, NULL, dmg, DAMAGE_NO_KNOCKBACK, MOD_POISONGASMINE);
+	}
+}
+
+/**
+ * @brief G_PoisonGasThink grows/keeps/fades the cloud like smoke and does the poison damage
+ * @param[in,out] gas
+ */
+void G_PoisonGasThink(gentity_t *gas)
+{
+	// size and lifetime: the standard smoke grenade behaviour (may free the entity)
+	weapon_smokeBombExplode(gas);
+
+	if (!gas->inuse || gas->think != G_PoisonGasThink)
+	{
+		return;
+	}
+
+	if (level.time >= gas->timestamp && gas->s.effect1Time > POISONGAS_MIN_RADIUS)
+	{
+		G_PoisonGasDamage(gas);
+		gas->timestamp = level.time + POISONGAS_TICK;
+	}
+}
+
+/**
+ * @brief G_PoisonMineRelease replaces a triggered poison landmine with a poison gas cloud
+ * @param[in,out] mine
+ */
+void G_PoisonMineRelease(gentity_t *mine)
+{
+	gentity_t       *gas = G_Spawn();
+	mapEntityData_t *mEnt;
+	vec3_t          origin;
+
+	VectorCopy(mine->r.currentOrigin, origin);
+	origin[2] += 1;     // within the 4 unit ground check, so the cloud never starts falling
+
+	gas->classname           = "poison_gas";
+	gas->s.eType             = ET_MISSILE;
+	gas->s.weapon            = WP_SMOKE_BOMB;
+	gas->s.nextWeapon        = WP_POISON_MINE;  // LANDMINE_IS_POISON: drawn as poison gas, no grenade model
+	gas->s.teamNum           = mine->s.teamNum & 3;
+	gas->s.clientNum         = mine->s.clientNum;
+	gas->s.groundEntityNum   = ENTITYNUM_WORLD;
+	gas->r.svFlags           = SVF_BROADCAST;
+	gas->r.contents          = 0;
+	gas->clipmask            = 0;
+	gas->parent              = mine->parent;
+	gas->r.ownerNum          = mine->r.ownerNum;
+	gas->methodOfDeath       = MOD_POISONGASMINE;
+	gas->splashMethodOfDeath = MOD_POISONGASMINE;
+	gas->timestamp           = 0;                // next damage tick: right away
+	gas->think               = G_PoisonGasThink;
+	gas->nextthink           = level.time + FRAMETIME;
+
+	G_SetOrigin(gas, origin);
+	trap_LinkEntity(gas);
+
+	G_AddEvent(gas, EV_GENERAL_SOUND, G_SoundIndex("sound/weapons/grenade/gren_smoke.wav"));
+
+	// the mine is gone: remove it from both teams' command maps, as an exploding landmine does
+	if ((mEnt = G_FindMapEntityData(&mapEntityData[0], mine - g_entities)) != NULL)
+	{
+		G_FreeMapEntityData(&mapEntityData[0], mEnt);
+	}
+
+	if ((mEnt = G_FindMapEntityData(&mapEntityData[1], mine - g_entities)) != NULL)
+	{
+		G_FreeMapEntityData(&mapEntityData[1], mEnt);
+	}
+
+	G_FreeEntity(mine);
 }
 
 /**

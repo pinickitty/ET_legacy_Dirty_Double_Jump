@@ -2207,6 +2207,15 @@ int G_CountTeamTripmines(team_t team);
 void G_RemoveTripmines(gentity_t *ent);
 void G_TripminePrime(gentity_t *self);
 void G_TripmineExpire(gentity_t *self);
+
+// poison gas landmine (Dirty Double Jump)
+#define POISONMINE_RELEASE_DELAY 1000   ///< ms between stepping on a poison mine and the gas release
+#define POISONGAS_TICK           800    ///< ms between poison gas damage ticks
+#define POISONGAS_MIN_RADIUS     24     ///< the cloud only hurts once it has grown beyond this radius
+
+gentity_t *weapon_poisonmine_fire(gentity_t *ent);
+void G_PoisonMineRelease(gentity_t *mine);
+void G_PoisonGasThink(gentity_t *gas);
 void G_TripmineThink(gentity_t *self);
 void G_TripmineDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, meansOfDeath_t mod);
 gentity_t *weapon_tripmine_fire(gentity_t *ent);

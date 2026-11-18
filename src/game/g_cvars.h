@@ -109,6 +109,9 @@ extern vmCvar_t team_maxTripmines;
 extern vmCvar_t g_tripmineTimeout;
 extern vmCvar_t g_tripmineDebug;
 extern vmCvar_t g_tripmineArmTime;
+extern vmCvar_t g_poisonMines;
+extern vmCvar_t g_poisonGasDamage;
+extern vmCvar_t g_poisonGasRadius;
 
 extern vmCvar_t g_scriptName;               ///< name of script file to run (instead of default for that map)
 extern vmCvar_t g_scriptDebug;              ///< what level of detail do we want script printing to go to.

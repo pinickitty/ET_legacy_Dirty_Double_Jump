@@ -1358,6 +1358,12 @@ static void CG_Missile(centity_t *cent)
 	{
 		// the smoke effect
 		CG_RenderSmokeGrenadeSmoke(cent, weapon);
+
+		// poison gas cloud released by a poison landmine (Dirty Double Jump): only the cloud, no grenade model
+		if (LANDMINE_IS_POISON(s1))
+		{
+			return;
+		}
 	}
 	else if (s1->weapon == WP_SATCHEL && s1->clientNum == cg.snap->ps.clientNum)
 	{

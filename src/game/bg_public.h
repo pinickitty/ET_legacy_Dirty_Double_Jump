@@ -916,8 +916,9 @@ typedef enum
 
 	// Dirty Double Jump weapons
 	WP_TRIPMINE,               ///< 56 Engineer wall-mounted laser mine
+	WP_POISON_MINE,            ///< 57 Engineer poison gas landmine (thrown; becomes a WP_LANDMINE entity with LANDMINE_IS_POISON)
 
-	WP_NUM_WEAPONS             ///< 57
+	WP_NUM_WEAPONS             ///< 58
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -1148,6 +1149,7 @@ typedef enum
 	MOD_MP34, // Allied Sten alternative
 
 	MOD_TRIPMINE, // Engineer tripmine (Dirty Double Jump)
+	MOD_POISONGASMINE, // poison gas cloud released by a poison landmine (Dirty Double Jump)
 
 	MOD_NUM_MODS
 
@@ -1365,6 +1367,12 @@ extern weaponTable_t *GetWeaponTableData(int weaponIndex);
 // tripmine geometry shared by game and cgame (Dirty Double Jump)
 #define TRIPMINE_WALL_OFFSET  4       ///< mine origin distance from the wall (keeps its box out of the wall)
 #define TRIPMINE_BEAM_LENGTH  2048    ///< length of the trigger line
+
+// poison gas landmine (Dirty Double Jump): the mine is a normal WP_LANDMINE / MOD_LANDMINE entity so all
+// landmine rules (arming, defusing, spotting, team limit) apply; this marker in entityState_t (unused by
+// missiles otherwise) tells game and cgame it is the poison variant. The gas cloud it releases is a
+// WP_SMOKE_BOMB entity carrying the same marker.
+#define LANDMINE_IS_POISON(es) ((es)->nextWeapon == WP_POISON_MINE)
 #define IS_VALID_MOD(mod) ((mod) >= MOD_UNKNOWN && (mod) < MOD_NUM_MODS)
 #define IS_VALID_AMMUNITION(a) ((a) >= MISSILE_NONE && (a) < MOD_NUM_MISIILES)
 
@@ -2017,6 +2025,7 @@ typedef enum item_s
 	ITEM_RED_FLAG,
 	ITEM_BLUE_FLAG,
 	ITEM_WEAPON_TRIPMINE,          ///< Dirty Double Jump - kept last so existing item indexes don't move
+	ITEM_WEAPON_POISON_MINE,       ///< Dirty Double Jump
 	ITEM_MAX_ITEMS,
 
 } item_t;

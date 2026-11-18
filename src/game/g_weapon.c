@@ -4133,6 +4133,29 @@ gentity_t *weapon_grenadelauncher_fire(gentity_t *ent)
 }
 
 /**
+ * @brief weapon_poisonmine_fire throws a poison gas landmine (Dirty Double Jump)
+ *
+ * The thrown entity is turned into an ordinary landmine carrying the poison marker, so arming,
+ * defusing, spotting, the team limit and the command map all use the landmine code unchanged.
+ * Only LandMineTrigger() treats it differently (it releases poison gas instead of exploding).
+ *
+ * @param[in] ent
+ * @return the mine
+ */
+gentity_t *weapon_poisonmine_fire(gentity_t *ent)
+{
+	gentity_t *mine = weapon_grenadelauncher_fire(ent);
+
+	if (mine)
+	{
+		mine->s.weapon     = WP_LANDMINE;
+		mine->s.nextWeapon = WP_POISON_MINE;    // LANDMINE_IS_POISON
+	}
+
+	return mine;
+}
+
+/**
  * @brief weapon_satcheldet_fire
  * @param[in] ent
  * @return
@@ -4572,6 +4595,8 @@ weapFireTable_t weapFireTable[] =
     { WP_AIRSTRIKE,            NULL,                        NULL,                       NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_LINEAR,      MISSILE_PRESTEP_TIME,  { { 0, 0, 0 }, { 0, 0, 0 } },                    { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 0,         2,       0,     0,        20,          },
     // Dirty Double Jump - think = G_FreeEntity: an unarmed tripmine disappears after nextThink ms
     { WP_TRIPMINE,             weapon_tripmine_fire,        G_TripmineExpire,              NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_CORPSE, TR_STATIONARY,  0,                     { { -3.f, -3.f, -3.f }, { 3.f, 3.f, 3.f } },     { { -12.f, -12.f, -12.f }, { 12.f, 12.f, 12.f } },     MASK_MISSILESHOT, 15000,     0,       0,     0,        20,          },
+    // Dirty Double Jump - poison landmine: identical to WP_LANDMINE except the fire function
+    { WP_POISON_MINE,          weapon_poisonmine_fire,      DynaSink,                   NULL,               ET_MISSILE,            EF_BOUNCE_HALF | EF_BOUNCE, SVF_BROADCAST,                CONTENTS_CORPSE, TR_GRAVITY,     MISSILE_PRESTEP_TIME,  { { -4.f, -4.f, 0.f }, { 4.f, 4.f, 10.f } },     { { -16.f, -16.f, 0.f }, { 16.f, 16.f, 16.f } }, MASK_MISSILESHOT, 15000,     0,       5,     16500,    20,          },
 };
 // *INDENT-ON*
 

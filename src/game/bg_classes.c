@@ -110,6 +110,7 @@ bg_playerclass_t bg_playerClasses[2][NUM_PLAYER_CLASSES] =
 				{ WP_PLIERS,               SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   },
 				{ WP_LANDMINE,             SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   },
 				{ WP_TRIPMINE,             SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   }, // only given when g_tripmines is on
+				{ WP_POISON_MINE,          SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   }, // only given when g_poisonMines is on
 				{ WP_BINOCULARS,           SK_BATTLE_SENSE,                             SK_BATTLE_SENSE_BINOCULAR, 1,   0   },
 			},
 			0,
@@ -239,6 +240,7 @@ bg_playerclass_t bg_playerClasses[2][NUM_PLAYER_CLASSES] =
 				{ WP_PLIERS,               SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   },
 				{ WP_LANDMINE,             SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   },
 				{ WP_TRIPMINE,             SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   }, // only given when g_tripmines is on
+				{ WP_POISON_MINE,          SK_EXPLOSIVES_AND_CONSTRUCTION,              0,                         0,   1   }, // only given when g_poisonMines is on
 				{ WP_BINOCULARS,           SK_BATTLE_SENSE,                             SK_BATTLE_SENSE_BINOCULAR, 1,   0   },
 			},
 			0,

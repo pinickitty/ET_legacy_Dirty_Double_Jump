@@ -1360,6 +1360,11 @@ void SetWolfSpawnWeapons(gclient_t *client)
 				continue;
 			}
 
+			if (weaponClassInfo->weapon == WP_POISON_MINE && !g_poisonMines.integer)
+			{
+				continue;
+			}
+
 			// special check for riflenade, we need the launcher to use it
 			if (GetWeaponTableData(weaponClassInfo->weapon)->type & WEAPON_TYPE_RIFLENADE)
 			{
