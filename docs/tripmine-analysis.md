@@ -157,3 +157,13 @@ need no engine or protocol change. Clients must have the matching pk3, which the
   - **Cleanup:** with `g_tripmineTimeout` set, the owner's mines fade on disconnect, team change and shuffle.
   - **Command map:** tripmines appear with the landmine icon.
   - **Cvars:** `team_maxTripmines` (default 6) and `g_tripmineTimeout` (default 1).
+- **Client behaviour (T3), from section 6:**
+  - **Drawing:** `CG_Tripmine` draws the mine flat on the wall, its top along the normal, then a
+    rail-core laser from the mine to the first solid surface or player.
+  - **Beam colour:** red for Axis, blue for Allies. It is dim (50) while priming or when seen by an
+    enemy, and bright (255) once live for its own team.
+  - **Visibility:** own team and spectators always see it. Enemies see it only if it is spotted, or
+    they have Trap Awareness and are within 256 units (drawn with the construction shader, like landmines).
+  - **Crosshair:** shows "X's Tripmine".
+  - **Effects:** explosion, view model and the auto-switch to pliers after placing all come from the
+    landmine weapon file.

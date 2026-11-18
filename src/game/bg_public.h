@@ -1361,6 +1361,10 @@ typedef struct modtable_s
 extern weaponTable_t *GetWeaponTableData(int weaponIndex);
 
 #define IS_VALID_WEAPON(w) ((w) > WP_NONE && (w) < WP_NUM_WEAPONS)
+
+// tripmine geometry shared by game and cgame (Dirty Double Jump)
+#define TRIPMINE_WALL_OFFSET  4       ///< mine origin distance from the wall (keeps its box out of the wall)
+#define TRIPMINE_BEAM_LENGTH  2048    ///< length of the trigger line
 #define IS_VALID_MOD(mod) ((mod) >= MOD_UNKNOWN && (mod) < MOD_NUM_MODS)
 #define IS_VALID_AMMUNITION(a) ((a) >= MISSILE_NONE && (a) < MOD_NUM_MISIILES)
 

@@ -2198,8 +2198,7 @@ qboolean G_SweepForLandmines(vec3_t origin, float radius, int team);
 // tripmine (Dirty Double Jump)
 #define TRIPMINE_PLACE_DIST   64      ///< how far in front of the eyes the wall must be
 #define TRIPMINE_ANCHOR_DIST  512     ///< the laser needs another world surface within this distance
-#define TRIPMINE_WALL_OFFSET  4       ///< mine origin distance from the wall (keeps its box out of the wall)
-#define TRIPMINE_BEAM_LENGTH  2048    ///< length of the trigger line
+// TRIPMINE_WALL_OFFSET and TRIPMINE_BEAM_LENGTH are in bg_public.h (shared with cgame)
 #define TRIPMINE_THINK_TIME   100     ///< trigger line check interval (ms)
 #define TRIPMINE_PRIME_TIME   250     ///< delay between armed and live (ms)
 #define TRIPMINE_HEALTH       20      ///< hit points of a live mine

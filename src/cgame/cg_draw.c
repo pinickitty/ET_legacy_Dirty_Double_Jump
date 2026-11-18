@@ -2063,7 +2063,7 @@ static void CG_ScanForCrosshairEntity()
 		}
 
 		// is a dynamite or landmine and server allow displaying owner name (g_misc cvar)
-		if ((cent->currentState.weapon == WP_DYNAMITE || cent->currentState.weapon == WP_LANDMINE || cent->currentState.weapon == WP_SATCHEL)
+		if ((cent->currentState.weapon == WP_DYNAMITE || cent->currentState.weapon == WP_LANDMINE || cent->currentState.weapon == WP_SATCHEL || cent->currentState.weapon == WP_TRIPMINE)
 		    && cgs.clientinfo[cg.snap->ps.clientNum].team == cent->currentState.teamNum
 		    && cent->currentState.otherEntityNum < MAX_CLIENTS)
 		{
@@ -2451,6 +2451,9 @@ void CG_DrawCrosshairNames(hudComponent_t *comp)
 						break;
 					case WP_SATCHEL:
 						weaponText = "Satchel Charge";
+						break;
+					case WP_TRIPMINE:
+						weaponText = "Tripmine";
 						break;
 					default:
 						weaponText = "Unknown weapon";

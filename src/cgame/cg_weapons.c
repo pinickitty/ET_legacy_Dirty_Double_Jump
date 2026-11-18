@@ -1097,6 +1097,7 @@ static int CG_DefaultAnimFrameForWeapon(int weapon)
 		break;
 	case WP_SATCHEL:
 	case WP_LANDMINE:
+	case WP_TRIPMINE:
 		frame = 8;
 		break;
 	case WP_SATCHEL_DET:
@@ -1544,6 +1545,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			}
 			break;
 		case WP_LANDMINE:
+		case WP_TRIPMINE:
 			// dont show drop after attack
 			if ((cg.predictedPlayerState.weaponstate == WEAPON_DROPPING && cent->firedTime > 0))
 			{
@@ -1636,6 +1638,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			}
 			break;
 		case WP_LANDMINE:
+		case WP_TRIPMINE:
 			if ((cg.time > (cent->firedTime + 80)) && (cg.time < (cent->firedTime + 700)))
 			{
 				return;
@@ -1791,6 +1794,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		{
 		// fixup 3P landmine model (rotate, translate, rescale)
 		case WP_LANDMINE:
+		case WP_TRIPMINE:
 		{
 			// rotate
 			AxisToAngles(gun.axis, angles);
@@ -4465,7 +4469,7 @@ void CG_OutOfAmmoChange(qboolean allowForceSwitch)
 
 	if (allowForceSwitch)
 	{
-		if ((cg.weaponSelect == WP_LANDMINE || cg.weaponSelect == WP_DYNAMITE) && CG_WeaponSelectable(WP_PLIERS, qfalse))
+		if ((cg.weaponSelect == WP_LANDMINE || cg.weaponSelect == WP_TRIPMINE || cg.weaponSelect == WP_DYNAMITE) && CG_WeaponSelectable(WP_PLIERS, qfalse))
 		{
 			CG_FinishWeaponChange(cg.predictedPlayerState.weapon, WP_PLIERS);
 			return;

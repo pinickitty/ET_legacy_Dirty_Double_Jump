@@ -1227,6 +1227,103 @@ static qboolean CG_LerpRifleGrenadeDir(centity_t *cent, vec3_t outDir)
 	return qtrue;
 }
 
+/**
+ * @brief CG_Tripmine draws a wall-mounted tripmine and, once armed, its laser (Dirty Double Jump)
+ *
+ * The beam is visible to the mine's team and to spectators. Enemies only see the mine and a dim
+ * beam when it has been spotted by a covert ops, or when they have trap awareness and are within
+ * 256 units - the same rules as landmines.
+ *
+ * @param[in] cent
+ * @param[in] weapon
+ */
+static void CG_Tripmine(centity_t *cent, const weaponInfo_t *weapon)
+{
+	entityState_t *s1      = &cent->currentState;
+	clientInfo_t  *viewer  = &cgs.clientinfo[cg.snap->ps.clientNum];
+	qboolean      friendly = (viewer->team == s1->teamNum || viewer->team == TEAM_SPECTATOR);
+	qboolean      trapAware = qfalse;
+	refEntity_t   ent;
+	refEntity_t   beam;
+	trace_t       tr;
+	vec3_t        end;
+	byte          intensity;
+
+	if (s1->effect1Time && !friendly && !s1->modelindex2 && s1->density - 1 != cg.snap->ps.clientNum)
+	{
+		// not spotted: only players with trap awareness who are close enough see it
+		if (!BG_IsSkillAvailable(viewer->skill, SK_BATTLE_SENSE, SK_BATTLE_SENSE_TRAP_AWARENESS)
+		    || DistanceSquared(cent->lerpOrigin, cg.predictedPlayerEntity.lerpOrigin) > Square(256))
+		{
+			return;
+		}
+		trapAware = qtrue;
+	}
+
+	// the mine sits on the wall, its top facing away from it
+	Com_Memset(&ent, 0, sizeof(ent));
+	VectorMA(cent->lerpOrigin, -TRIPMINE_WALL_OFFSET, s1->origin2, ent.origin);
+	VectorCopy(ent.origin, ent.oldorigin);
+	VectorCopy(cent->lerpOrigin, ent.lightingOrigin);
+	VectorCopy(s1->origin2, ent.axis[2]);
+	PerpendicularVector(ent.axis[0], ent.axis[2]);
+	CrossProduct(ent.axis[2], ent.axis[0], ent.axis[1]);
+
+	ent.hModel   = weapon->missileModel;
+	ent.renderfx = weapon->missileRenderfx | RF_NOSHADOW | RF_LIGHTING_ORIGIN;
+
+	if (s1->teamNum == TEAM_ALLIES)
+	{
+		ent.customSkin = weapon->missileAlliedSkin;
+	}
+	else if (s1->teamNum == TEAM_AXIS)
+	{
+		ent.customSkin = weapon->missileAxisSkin;
+	}
+
+	if (trapAware)
+	{
+		ent.customShader = cgs.media.genericConstructionShader;
+	}
+
+	if (ent.hModel)
+	{
+		CG_AddRefEntityWithPowerups(&ent, s1->powerups, TEAM_FREE, s1, vec3_origin);
+	}
+
+	if (!s1->effect1Time)
+	{
+		return;     // not armed yet: no laser
+	}
+
+	if (friendly)
+	{
+		CG_AddEntToCrosshairScanList(cent);
+	}
+
+	// the laser runs along the wall normal until it hits something solid
+	VectorMA(cent->lerpOrigin, TRIPMINE_BEAM_LENGTH, s1->origin2, end);
+	CG_Trace(&tr, cent->lerpOrigin, NULL, NULL, end, s1->number, MASK_SOLID | CONTENTS_BODY);
+
+	Com_Memset(&beam, 0, sizeof(beam));
+	VectorCopy(cent->lerpOrigin, beam.origin);
+	VectorCopy(tr.endpos, beam.oldorigin);
+	AxisClear(beam.axis);
+	beam.reType       = RT_RAIL_CORE;
+	beam.customShader = cgs.media.railCoreShader;
+	beam.renderfx     = RF_NOSHADOW;
+
+	// dim while priming or when seen by an enemy, bright once live
+	intensity = (friendly && cg.time >= s1->time2) ? 255 : 50;
+
+	beam.shaderRGBA[0] = (s1->teamNum == TEAM_AXIS) ? intensity : 0;
+	beam.shaderRGBA[1] = 0;
+	beam.shaderRGBA[2] = (s1->teamNum == TEAM_ALLIES) ? intensity : 0;
+	beam.shaderRGBA[3] = 255;
+
+	trap_R_AddRefEntityToScene(&beam);
+}
+
 static void CG_Missile(centity_t *cent)
 {
 	refEntity_t        ent;
@@ -1239,6 +1336,12 @@ static void CG_Missile(centity_t *cent)
 		s1->weapon = 0;
 	}
 	weapon = &cg_weapons[s1->weapon];
+
+	if (s1->weapon == WP_TRIPMINE)
+	{
+		CG_Tripmine(cent, weapon);
+		return;
+	}
 
 	if (s1->weapon == WP_SMOKE_BOMB)
 	{
