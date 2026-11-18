@@ -2082,9 +2082,10 @@ void G_ArmTripmine(gentity_t *traceEnt, gentity_t *ent)
 
 	traceEnt->s.effect1Time = 1;    // armed
 	traceEnt->s.modelindex2 = 0;    // not spotted
-	traceEnt->s.time2       = level.time + TRIPMINE_PRIME_TIME; // beam goes live (client draws it bright from then on)
+	// the beam goes live after g_tripmineArmTime, so the engineer can step out of it (client draws it bright from then on)
+	traceEnt->s.time2       = level.time + MAX(g_tripmineArmTime.integer, TRIPMINE_PRIME_TIME_MIN);
 
-	traceEnt->nextthink = level.time + TRIPMINE_PRIME_TIME;
+	traceEnt->nextthink = traceEnt->s.time2;
 	traceEnt->think     = G_TripminePrime;
 }
 

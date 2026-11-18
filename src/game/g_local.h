@@ -2200,7 +2200,7 @@ qboolean G_SweepForLandmines(vec3_t origin, float radius, int team);
 #define TRIPMINE_ANCHOR_DIST  512     ///< the laser needs another world surface within this distance
 // TRIPMINE_WALL_OFFSET and TRIPMINE_BEAM_LENGTH are in bg_public.h (shared with cgame)
 #define TRIPMINE_THINK_TIME   100     ///< trigger line check interval (ms)
-#define TRIPMINE_PRIME_TIME   250     ///< delay between armed and live (ms)
+#define TRIPMINE_PRIME_TIME_MIN 250   ///< shortest allowed delay between armed and live (ms), see g_tripmineArmTime
 #define TRIPMINE_HEALTH       20      ///< hit points of a live mine
 
 int G_CountTeamTripmines(team_t team);
