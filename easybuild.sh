@@ -583,6 +583,8 @@ generate_configuration() {
 
     MODNAME=${MODNAME:-legacy}
     MODURL=${MODURL:-www.etlegacy.com}
+    # install folder (fs_game) of the mod; client mod translations are enabled there
+    MOD_FOLDER=${MOD_FOLDER:-legacyddj}
 
     einfo "Configuring ET: Legacy..."
     cmake_args+=(
@@ -641,6 +643,7 @@ generate_configuration() {
         "-DINSTALL_WOLFADMIN=${INSTALL_WOLFADMIN}"
         "-DMODNAME=${MODNAME}"
         "-DMODURL=${MODURL}"
+        "-DMOD_FOLDER=${MOD_FOLDER}"
     )
 
     if [ -n "$TOOLCHAIN_FILE" ]; then
