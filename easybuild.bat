@@ -14,7 +14,8 @@ for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "[Environment]
 IF NOT DEFINED docs_dir SET "docs_dir=%USERPROFILE%\Documents"
 SET game_homepath=!docs_dir!\ETLegacy
 SET game_basepath=!docs_dir!\ETLegacy-Build
-SET modname=legacy
+:: install folder (fs_game) of the mod; also passed to CMake as MOD_FOLDER
+SET mod_folder=legacyddj
 SET build_type=Release
 SET batloc=%~dp0
 SET "batloc=%batloc:\=/%"
@@ -197,13 +198,13 @@ GOTO:EOF
 		mkdir "!game_basepath!"
 	)
 	CD !build_dir!
-	CALL:CLEANPATH "!game_basepath!\%modname%\" "*.pk3 *.dll *.dat"
-	CALL:CLEANPATH "!game_homepath!\%modname%\" "*.pk3 *.dll *.dat"
+	CALL:CLEANPATH "!game_basepath!\%mod_folder%\" "*.pk3 *.dll *.dat"
+	CALL:CLEANPATH "!game_homepath!\%mod_folder%\" "*.pk3 *.dll *.dat"
 	CALL:COPYFROMPATH "%cd%\" "et*.exe renderer_opengl*.dll" "!game_basepath!\"
-	CALL:COPYFROMPATH "%cd%\legacy\" "*.pk3 qagame*.dll *.dat" "!game_basepath!\%modname%\"
+	CALL:COPYFROMPATH "%cd%\legacy\" "*.pk3 qagame*.dll *.dat" "!game_basepath!\%mod_folder%\"
 	CD !batloc!
 	CALL:COPYFROMPATH "%cd%\misc\etmain\" "*" "!game_basepath!\etmain\"
-	CALL:COPYFROMPATH "%cd%\misc\" "description.txt" "!game_basepath!\%modname%\"
+	CALL:COPYFROMPATH "%cd%\misc\" "description.txt" "!game_basepath!\%mod_folder%\"
 	CALL:COPYFROMPATH "%cd%\docs\" "INSTALL.txt" "!game_basepath!"
 	CALL:COPYFROMPATH "%cd%\" "COPYING.txt" "!game_basepath!"
 GOTO:EOF
@@ -425,7 +426,8 @@ GOTO :EOF
 	-DBUNDLED_WOLFSSL=!wolf_ssl! ^
 	-DBUNDLED_OPENSSL=!open_ssl! ^
 	-DFEATURE_SSL=!feature_ssl! ^
-	-DFEATURE_AUTH=!feature_auth!
+	-DFEATURE_AUTH=!feature_auth! ^
+	-DMOD_FOLDER=!mod_folder!
 
 	IF !mod_only!==1 (
 		SET local_build_string=!local_build_string! ^

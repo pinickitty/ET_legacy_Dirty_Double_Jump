@@ -41,6 +41,7 @@ include(cmake/ETLFunctions.cmake)
 
 set(MODNAME "legacy" CACHE STRING "Default mod name")
 set(MODURL "www.etlegacy.com" CACHE STRING "Default mod URL")
+set(MOD_FOLDER "${MODNAME}" CACHE STRING "Folder (fs_game) the mod is installed in; client mod translations are enabled there")
 
 #-----------------------------------------------------------------
 # Options

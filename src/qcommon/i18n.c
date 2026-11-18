@@ -46,6 +46,10 @@
 #include "i18n_findlocale.h"
 #endif
 
+#ifndef MOD_FOLDER
+#define MOD_FOLDER MODNAME      ///< fs_game folder the mod is installed in, set by CMake
+#endif
+
 #define I18N_MAX_CATALOG_BYTES  524288
 #define I18N_MAX_ENTRIES        4096
 #define I18N_HASH_SIZE          8192
@@ -660,8 +664,9 @@ static void I18N_RefreshLanguage(void)
 		Q_strncpyz(language, "en", sizeof(language));
 	}
 
+	// translate in the default mod dir and in the folder this mod is installed in (MOD_FOLDER)
 	trap_Cvar_VariableStringBuffer("fs_game", gameDir, sizeof(gameDir));
-	i18nTranslateMod = !gameDir[0] || !Q_stricmp(gameDir, MODNAME);
+	i18nTranslateMod = !gameDir[0] || !Q_stricmp(gameDir, MODNAME) || !Q_stricmp(gameDir, MOD_FOLDER);
 
 	if (!Q_stricmp(language, i18nLanguage) && i18nTranslateMod == i18nTranslateModLast)
 	{
