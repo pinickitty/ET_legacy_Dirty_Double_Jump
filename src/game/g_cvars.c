@@ -127,6 +127,10 @@ vmCvar_t g_tripmineArmTime;
 vmCvar_t g_poisonMines;
 vmCvar_t g_poisonGasDamage;
 vmCvar_t g_poisonGasRadius;
+vmCvar_t g_poison;
+vmCvar_t g_weapons;
+vmCvar_t g_damageweapons;
+vmCvar_t n_preciseLandmineTrigger;
 
 vmCvar_t g_scriptName; // name of script file to run (instead of default for that map)
 
@@ -480,13 +484,17 @@ cvarTable_t gameCvarTable[] =
 	{ &g_airJump,                         "g_airJump",                         "0",                          CVAR_SYSTEMINFO,                                 0, qfalse, qfalse },     // 0 = off, 1 = anytime, 2 = only while rising
 	{ &g_airJumpScale,                    "g_airJumpScale",                    "1.4",                        CVAR_SYSTEMINFO,                                 0, qfalse, qfalse },     // air jump velocity as a multiple of JUMP_VELOCITY
 	{ &g_tripmines,                       "g_tripmines",                       "0",                          CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qfalse },     // 0 = off, 1 = engineers spawn with a tripmine
-	{ &team_maxTripmines,                 "team_maxTripmines",                 "6",                          0,                                               0, qfalse, qfalse },     // armed tripmines allowed per team
+	{ &team_maxTripmines,                 "team_maxTripmines",                 "5",                          0,                                               0, qfalse, qfalse },     // armed tripmines allowed per team (NitMod default 5)
 	{ &g_tripmineTimeout,                 "g_tripmineTimeout",                 "1",                          0,                                               0, qfalse, qfalse },     // 1 = remove a player's tripmines when he leaves or changes team
 	{ &g_tripmineArmTime,                     "g_tripmineArmTime",                     "3000",                          0,                                               0, qfalse, qfalse },     // ms between "Tripmine armed" and the laser going live (time for the engineer to step out of it), min 250
 	{ &g_tripmineDebug,                    "g_tripmineDebug",                    "0",                          0,                                               0, qfalse, qfalse },     // 1 = print tripmine placing/arming/trigger steps to the server console
 	{ &g_poisonMines,                     "g_poisonMines",                     "0",                          CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qfalse },     // 0 = off, 1 = engineers spawn with a poison gas landmine
 	{ &g_poisonGasDamage,                 "g_poisonGasDamage",                 "12",                         0,                                               0, qfalse, qfalse },     // poison gas damage per 800 ms tick at the centre of the cloud
 	{ &g_poisonGasRadius,                 "g_poisonGasRadius",                 "250",                        0,                                               0, qfalse, qfalse },     // radius in which poison gas does damage
+	{ &g_poison,                          "g_poison",                          "0",                          CVAR_SERVERINFO,                                 0, qfalse, qfalse },     // bitflags, 0 = off. Any value: poison syringe (Light Weapons level 4), medic syringe cures. 2: health packs and cabinets also cure. 4: slow poison (10 HP / 1.5 s). 8: the poisoner's own packs don't cure
+	{ &g_weapons,                         "g_weapons",                         "0",                          CVAR_SERVERINFO,                                 0, qfalse, qfalse },     // NitMod compatible bitflags: 16384 poison gas landmines, 32768 tripmines (same as g_poisonMines 1 / g_tripmines 1)
+	{ &g_damageweapons,                   "g_damageweapons",                   "0",                          0,                                               0, qfalse, qfalse },     // NitMod compatible bitflags: 32 tripmines can be shot and destroyed
+	{ &n_preciseLandmineTrigger,          "n_preciseLandmineTrigger",          "0",                          0,                                               0, qfalse, qfalse },     // 1 = a landmine only triggers when your bounding box touches the mine's, instead of the distance check
 
 	{ &g_scriptName,                      "g_scriptName",                      "",                           CVAR_CHEAT,                                      0, qfalse, qfalse },
 
@@ -647,7 +655,7 @@ cvarTable_t gameCvarTable[] =
 	{ &skill_covertops,                   "skill_covertops",                   "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &skill_battlesense,                 "skill_battlesense",                 "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &skill_lightweapons,                "skill_lightweapons",                "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
-	{ &g_misc,                            "g_misc",                            "0",                          0,                                               0, qfalse, qfalse },
+	{ &g_misc,                            "g_misc",                            "0",                          CVAR_SERVERINFO,                                 0, qfalse, qfalse },     // serverinfo so cgame can read bit 16 (coloured enemy mines, Dirty Double Jump)
 	{ &g_intermissionTime,                "g_intermissionTime",                "60",                         0,                                               0, qfalse, qfalse },
 	{ &g_intermissionReadyPercent,        "g_intermissionReadyPercent",        "100",                        0,                                               0, qfalse, qfalse },
 	{ &g_mapScriptDirectory,              "g_mapScriptDirectory",              "mapscripts",                 0,                                               0, qfalse, qfalse },

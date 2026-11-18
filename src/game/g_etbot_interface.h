@@ -56,6 +56,7 @@ enum BotFlagOptions
 	OBF_TRIGGER_MINES      = (1 << 5),  ///< Bots will trigger team and spotted mines
 	OBF_SHOVING            = (1 << 6),  ///< Bots can use g_shove
 	OBF_NEXT_FLAG          = (1 << 16), ///< mod specific flags start from here
+	OBF_POISON_MINES       = OBF_NEXT_FLAG, ///< Dirty Double Jump (NitMod 65536): bots throw poison gas landmines instead of landmines
 };
 //////////////////////////////////////////////////////////////////////////
 

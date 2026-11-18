@@ -80,6 +80,25 @@
 #define TKFL_MINES              0x00000001
 #define TKFL_AIRSTRIKE          0x00000002
 #define TKFL_MORTAR             0x00000004
+#define TKFL_TRIPMINES          0x00000008  ///< Dirty Double Jump - no complaints for tripmine teamkills (NitMod bit)
+
+// Dirty Double Jump - NitMod g_friendlyFire bits. Only bit 1 turns friendly fire on, so the
+// mine bits can be added without enabling it.
+#define FF_ENABLED              1
+#define FF_NO_TEAM_LANDMINES    32          ///< teammates don't trip landmines (poison mines included)
+#define FF_TEAM_LANDMINE_DAMAGE 64          ///< landmines (and poison gas) hurt teammates even with friendly fire off
+#define FF_NO_TEAM_TRIPMINES    128         ///< teammates don't set off tripmines
+#define FF_NO_OWN_LANDMINES     256         ///< you can't set off your own landmines
+#define G_FriendlyFireOn()      (g_friendlyFire.integer & FF_ENABLED)
+
+// Dirty Double Jump - NitMod g_weapons bits, an alternative to g_poisonMines / g_tripmines
+#define WPF_POISON_MINES        16384
+#define WPF_TRIPMINES           32768
+#define G_PoisonMinesOn()       (g_poisonMines.integer || (g_weapons.integer & WPF_POISON_MINES))
+#define G_TripminesOn()         (g_tripmines.integer || (g_weapons.integer & WPF_TRIPMINES))
+
+// Dirty Double Jump - NitMod g_damageweapons bits
+#define DMGW_TRIPMINES          32          ///< tripmines can be shot and destroyed
 
 /**
  * @enum moverState_t
@@ -1087,6 +1106,13 @@ struct gclient_s
 	vec3_t legacyDownedViewAngles;            ///< View direction at the moment player got downed.
 	qboolean legacyDownedViewAnglesValid;     ///< True when downed angles are valid for revive restore.
 	int legacyRevivesSinceRespawn;            ///< Number of revives since last full respawn.
+
+	// Dirty Double Jump - lasting poison (ps.eFlags & EF_POISONED). The whole client is wiped
+	// in ClientSpawn, so respawning or being revived always clears it.
+	int poisoner;                             ///< entity number of whoever poisoned us, -1 when gone
+	int poisonStartTime;                      ///< level.time of the first injection
+	int poisonStack;                          ///< number of injections, multiplies the damage
+	int poisonNextTick;                       ///< level.time of the next damage tick
 };
 
 /**
@@ -1485,6 +1511,7 @@ void Cmd_WeaponStatsLeaders_f(gentity_t *ent, unsigned int dwCommand, int value)
 void Cmd_ResetSetup_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Give_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_God_f(gentity_t *ent, unsigned int dwCommand, int value);
+void Cmd_Poison_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Nofatigue_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Notarget_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Noclip_f(gentity_t *ent, unsigned int dwCommand, int value);
@@ -2213,6 +2240,17 @@ void G_TripmineExpire(gentity_t *self);
 #define POISONGAS_TICK           800    ///< ms between poison gas damage ticks
 #define POISONGAS_MIN_RADIUS     24     ///< the cloud only hurts once it has grown beyond this radius
 
+// lasting poison (Dirty Double Jump), g_poison bits
+#define POISON_ENABLED       1     ///< any non-zero value enables poison: the poison syringe, and the medic syringe cures it
+#define POISON_CURE_HEALTH   2     ///< health packs and health cabinets cure poison
+#define POISON_SLOW          4     ///< 10 HP every 1.5 s per injection instead of 1 HP every 50 ms
+#define POISON_NO_OWN_CURE   8     ///< health packs dropped by your own poisoner don't cure you
+
+void G_PoisonPlayer(gentity_t *victim, gentity_t *attacker);
+void G_CurePoison(gentity_t *ent);
+void G_PoisonThink(gentity_t *ent);
+qboolean G_PoisonCuredBy(gentity_t *ent, gentity_t *healer);
+
 gentity_t *weapon_poisonmine_fire(gentity_t *ent);
 void G_PoisonMineRelease(gentity_t *mine);
 void G_PoisonGasThink(gentity_t *gas);
@@ -2729,6 +2767,7 @@ void G_MapVoteInfoRead(void);
 
 // g_misc flags
 #define G_MISC_SHOVE_Z  BIT(0)
+// BIT(4) (16) is read by cgame from serverinfo: G_MISC_COLOURED_MINES in bg_public.h
 
 // g_voting flags
 #define VOTEF_USE_TOTAL_VOTERS      1   ///< use total voters instead of total players to decide if a vote passes

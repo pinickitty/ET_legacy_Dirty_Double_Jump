@@ -958,6 +958,31 @@ void Cmd_Give_f(gentity_t *ent, unsigned int dwCommand, int value)
 }
 
 /**
+ * @brief Dirty Double Jump - test the poisoned state without a syringe (cheat):
+ * "poison" adds one injection (from yourself), "poison cure" clears it.
+ * @param[in,out] ent
+ * @param dwCommand - unused
+ * @param value - unused
+ */
+void Cmd_Poison_f(gentity_t *ent, unsigned int dwCommand, int value)
+{
+	if (!CheatsOk(ent))
+	{
+		return;
+	}
+
+	if (!Q_stricmp(ConcatArgs(1), "cure"))
+	{
+		G_CurePoison(ent);
+		trap_SendServerCommand(ent - g_entities, "print \"poison cured\n\"");
+		return;
+	}
+
+	G_PoisonPlayer(ent, ent);
+	trap_SendServerCommand(ent - g_entities, va("print \"poisoned, stack %i\n\"", ent->client->poisonStack));
+}
+
+/**
  * @brief Sets client to godmode
  * @param[in,out] ent
  * @param dwCommand - unused
@@ -1244,6 +1269,13 @@ void Cmd_Kill_f(gentity_t *ent, unsigned int dwCommand, int value)
 	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR ||
 	    (ent->client->ps.pm_flags & PMF_LIMBO))
 	{
+		return;
+	}
+
+	// Dirty Double Jump - no escaping the poison kill (and denying the poisoner) with /kill
+	if (ent->client->ps.eFlags & EF_POISONED)
+	{
+		CP("cp \"Selfkill disabled while you are poisoned.\n\"");
 		return;
 	}
 

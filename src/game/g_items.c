@@ -604,6 +604,12 @@ int Pickup_Health(gentity_t *ent, gentity_t *other)
 	}
 	other->client->ps.stats[STAT_HEALTH] = other->health;
 
+	// Dirty Double Jump - health packs can cure poison (g_poison bits 2 and 8)
+	if (G_PoisonCuredBy(other, ent->parent))
+	{
+		G_CurePoison(other);
+	}
+
 #ifdef FEATURE_OMNIBOT
 	// omni-bot event
 	if (ent->parent)

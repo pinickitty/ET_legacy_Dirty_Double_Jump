@@ -762,6 +762,7 @@ typedef enum
 //#endif
 #define EF_AAGUN_ACTIVE     0x00400000                         ///< player is manning an AA gun
 #define EF_SPARE0           0x00800000                         ///< freed
+#define EF_POISONED         EF_SPARE0                          ///< player is poisoned (Dirty Double Jump; bit 23 still fits the 24 networked eFlags bits)
 
 // !! NOTE: only place flags that don't need to go to the client beyond 0x00800000
 #define EF_SPARE1           0x01000000                         ///< freed
@@ -1150,6 +1151,7 @@ typedef enum
 
 	MOD_TRIPMINE, // Engineer tripmine (Dirty Double Jump)
 	MOD_POISONGASMINE, // poison gas cloud released by a poison landmine (Dirty Double Jump)
+	MOD_POISON, // lasting poison (EF_POISONED) from the poison syringe (Dirty Double Jump)
 
 	MOD_NUM_MODS
 
@@ -1373,6 +1375,10 @@ extern weaponTable_t *GetWeaponTableData(int weaponIndex);
 // missiles otherwise) tells game and cgame it is the poison variant. The gas cloud it releases is a
 // WP_SMOKE_BOMB entity carrying the same marker.
 #define LANDMINE_IS_POISON(es) ((es)->nextWeapon == WP_POISON_MINE)
+
+/// Dirty Double Jump - g_misc bit 16 (NitMod): enemy mines seen with Battle Sense trap awareness are drawn
+/// transparent red/blue instead of white. The server cvar is in serverinfo so cgame can read it.
+#define G_MISC_COLOURED_MINES 16
 #define IS_VALID_MOD(mod) ((mod) >= MOD_UNKNOWN && (mod) < MOD_NUM_MODS)
 #define IS_VALID_AMMUNITION(a) ((a) >= MISSILE_NONE && (a) < MOD_NUM_MISIILES)
 

@@ -3158,6 +3158,7 @@ static void registerModConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, MOD_MP34);
 	lua_regconstinteger(vm->L, MOD_TRIPMINE);
 	lua_regconstinteger(vm->L, MOD_POISONGASMINE);
+	lua_regconstinteger(vm->L, MOD_POISON);
 
 	lua_regconstinteger(vm->L, MOD_NUM_MODS);
 }

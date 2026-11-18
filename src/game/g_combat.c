@@ -366,7 +366,8 @@ qboolean G_CheckComplaint(gentity_t *self, gentity_t *inflictor, gentity_t *atta
 			{
 				if (g_complaintlimit.integer)
 				{
-					if (!(meansOfDeath == MOD_LANDMINE && (g_disableComplaints.integer & TKFL_MINES)) &&
+					if (!((meansOfDeath == MOD_LANDMINE || meansOfDeath == MOD_POISONGASMINE) && (g_disableComplaints.integer & TKFL_MINES)) &&
+					    !(meansOfDeath == MOD_TRIPMINE && (g_disableComplaints.integer & TKFL_TRIPMINES)) && // Dirty Double Jump
 					    !((meansOfDeath == MOD_ARTY || meansOfDeath == MOD_AIRSTRIKE) && (g_disableComplaints.integer & TKFL_AIRSTRIKE)) &&
 					    !((meansOfDeath == MOD_MORTAR || meansOfDeath == MOD_MORTAR2) && (g_disableComplaints.integer & TKFL_MORTAR)))
 					{
@@ -468,6 +469,9 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 		G_Printf("Warning: invalid meansOfDeath [%i] in player_die\n", meansOfDeath);
 		return;
 	}
+
+	// Dirty Double Jump - the poison dies with the player (a corpse doesn't keep ticking)
+	G_CurePoison(self);
 
 	switch (meansOfDeath)
 	{
@@ -1630,16 +1634,20 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 			{
 				return;
 			}
-			else if (!g_friendlyFire.integer)
+			else if (!G_FriendlyFireOn())
 			{
-				return;
+				// Dirty Double Jump - g_friendlyFire 64: landmines (and poison mine gas) hurt teammates anyway
+				if (!((g_friendlyFire.integer & FF_TEAM_LANDMINE_DAMAGE) && (mod == MOD_LANDMINE || mod == MOD_POISONGASMINE)))
+				{
+					return;
+				}
 			}
 		}
 	}
 
 	// add to the attacker's hit counter (but only if target is a client)
 	if (attacker && attacker->client && targ->client  && targ != attacker &&
-	    mod != MOD_SWITCHTEAM && mod != MOD_SWAP_PLACES && mod != MOD_SUICIDE)
+	    mod != MOD_SWITCHTEAM && mod != MOD_SWAP_PLACES && mod != MOD_SUICIDE && mod != MOD_POISON) // poison ticks play no hitsounds
 	{
 		if (onSameTeam || (targ->client->ps.powerups[PW_OPS_DISGUISED] && (g_friendlyFire.integer & 1)))
 		{
@@ -1661,7 +1669,7 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 	}
 
 	if ((targ->flags & FL_NO_KNOCKBACK) || (dflags & DAMAGE_NO_KNOCKBACK) ||
-	    (targ->client && g_friendlyFire.integer && (onSameTeam || (attacker->client && targ->client->sess.sessionTeam == G_GetTeamFromEntity(inflictor)))))
+	    (targ->client && G_FriendlyFireOn() && (onSameTeam || (attacker->client && targ->client->sess.sessionTeam == G_GetTeamFromEntity(inflictor)))))
 	{
 		knockback = 0;
 	}
@@ -1888,8 +1896,12 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 		{
 			targ->client->ps.persistant[PERS_ATTACKER] = ENTITYNUM_WORLD;
 		}
-		targ->client->damage_blood     += take;
-		targ->client->damage_knockback += knockback;
+		// poison ticks (up to 20 a second) give no screen blood and no view kick
+		if (mod != MOD_POISON)
+		{
+			targ->client->damage_blood     += take;
+			targ->client->damage_knockback += knockback;
+		}
 
 		if (dir)
 		{

@@ -889,7 +889,7 @@ void G_BurnTarget(gentity_t *self, gentity_t *body, qboolean directhit)
 		//if( !self->count2 && body == self->parent )
 		//  return;
 
-		if (!(g_friendlyFire.integer) && OnSameTeam(body, self->parent))
+		if (!G_FriendlyFireOn() && OnSameTeam(body, self->parent))
 		{
 			return;
 		}
@@ -1769,6 +1769,21 @@ qboolean sEntWillTriggerMine(gentity_t *ent, gentity_t *mine)
 	{
 		vec3_t dist;
 
+		// Dirty Double Jump - n_preciseLandmineTrigger (NitMod): the player's box has to touch the mine's box
+		if (n_preciseLandmineTrigger.integer)
+		{
+			int k;
+
+			for (k = 0; k < 3; k++)
+			{
+				if (ent->r.absmin[k] > mine->r.absmax[k] || ent->r.absmax[k] < mine->r.absmin[k])
+				{
+					return qfalse;
+				}
+			}
+			return qtrue;
+		}
+
 		VectorSubtract(mine->r.currentOrigin, ent->r.currentOrigin, dist);
 		// have to be within the trigger distance AND on the ground -- if we jump over a mine, we don't set it off
 		//      (or if we fly by after setting one off)
@@ -1817,10 +1832,18 @@ void G_LandmineThink(gentity_t *self)
 			continue;
 		}
 
-		//if (!g_friendlyFire.integer && self->s.teamNum == ent->client->sess.sessionTeam)
-		//{
-		//   continue;
-		//}
+		// Dirty Double Jump - NitMod g_friendlyFire mine bits
+		if (ent == self->parent)
+		{
+			if (g_friendlyFire.integer & FF_NO_OWN_LANDMINES)
+			{
+				continue;   // 256: you can't set off your own mines
+			}
+		}
+		else if ((g_friendlyFire.integer & FF_NO_TEAM_LANDMINES) && self->s.teamNum == ent->client->sess.sessionTeam)
+		{
+			continue;       // 32: teammates don't trip the team's mines
+		}
 
 #ifdef FEATURE_OMNIBOT
 		if (!(g_OmniBotFlags.integer & OBF_TRIGGER_MINES) && ent->r.svFlags & SVF_BOT)
@@ -2049,8 +2072,8 @@ void G_TripmineThink(gentity_t *self)
 		return;
 	}
 
-	// teammates never set off their team's mines, the owner does
-	if (hit->client->sess.sessionTeam == self->s.teamNum && hit != self->parent)
+	// teammates set off the team's tripmines unless g_friendlyFire has bit 128 (NitMod); the owner always does
+	if ((g_friendlyFire.integer & FF_NO_TEAM_TRIPMINES) && hit->client->sess.sessionTeam == self->s.teamNum && hit != self->parent)
 	{
 		return;
 	}
@@ -2116,7 +2139,7 @@ void G_TripminePrime(gentity_t *self)
 	}
 
 	self->health     = TRIPMINE_HEALTH;
-	self->takedamage = qtrue;
+	self->takedamage = (g_damageweapons.integer & DMGW_TRIPMINES) ? qtrue : qfalse; // NitMod: only shootable with g_damageweapons 32
 	self->die        = G_TripmineDie;
 	self->count      = 0;   // defusing progress
 

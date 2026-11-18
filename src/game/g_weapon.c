@@ -561,6 +561,17 @@ gentity_t *Weapon_Syringe(gentity_t *ent)
 		return NULL;
 	}
 
+	// Dirty Double Jump - with g_poison on, the medic syringe cures a poisoned, living teammate
+	if (g_poison.integer && traceEnt->health > 0 && traceEnt->client->ps.pm_type != PM_DEAD &&
+	    (traceEnt->client->ps.eFlags & EF_POISONED) &&
+	    traceEnt->client->sess.sessionTeam == ent->client->sess.sessionTeam)
+	{
+		G_CurePoison(traceEnt);
+		trap_SendServerCommand(traceEnt - g_entities, va("cp \"You have been cured of poison by %s^7\"", ent->client->pers.netname));
+		trap_SendServerCommand(ent - g_entities, va("cp \"You cured %s^7 of poison\"", traceEnt->client->pers.netname));
+		return NULL;
+	}
+
 	// Optional syringe-heal logic for living teammates.
 	if (G_TrySyringeHeal(ent, traceEnt, &refundAmmo))
 	{
@@ -1940,7 +1951,7 @@ gentity_t *weapon_tripmine_fire(gentity_t *ent)
 	gentity_t *mine;
 	team_t    team = ent->client->sess.sessionTeam;
 
-	if (!g_tripmines.integer || (team != TEAM_AXIS && team != TEAM_ALLIES))
+	if (!G_TripminesOn() || (team != TEAM_AXIS && team != TEAM_ALLIES))
 	{
 		return NULL;
 	}
@@ -3041,7 +3052,7 @@ qboolean weapon_checkAirStrike(gentity_t *ent)
 {
 	// cancel the airstrike if FF off and player joined spec
 	// FIXME: this is a stupid workaround. Just store the parent team in the enitity itself and use that - no need to look up the parent
-	if (!g_friendlyFire.integer && ent->parent->client && ent->parent->client->sess.sessionTeam == TEAM_SPECTATOR)
+	if (!G_FriendlyFireOn() && ent->parent->client && ent->parent->client->sess.sessionTeam == TEAM_SPECTATOR)
 	{
 		ent->splashDamage = 0;  // no damage
 		ent->think        = G_ExplodeMissile;
@@ -4655,6 +4666,14 @@ void FireWeapon(gentity_t *ent)
 		if (!G_LuaHook_WeaponFire(ent->s.number, ent->s.weapon, &pFiredShot))
 #endif
 		{
+#ifdef FEATURE_OMNIBOT
+			// Dirty Double Jump - omnibot_flags 65536: bots don't know the poison mine, so their landmines become poison mines
+			if (ent->s.weapon == WP_LANDMINE && (ent->r.svFlags & SVF_BOT) && (g_OmniBotFlags.integer & OBF_POISON_MINES) && G_PoisonMinesOn())
+			{
+				pFiredShot = weapon_poisonmine_fire(ent);
+			}
+			else
+#endif
 			pFiredShot = weapFireTable[ent->s.weapon].fire(ent);
 		}
 

@@ -780,6 +780,13 @@ void heal_touch(gentity_t *self, gentity_t *other, trace_t *trace)
 		}
 
 		touchClients[i]->health += healvalue;
+
+		// Dirty Double Jump - health cabinets can cure poison (g_poison bit 2)
+		if (G_PoisonCuredBy(touchClients[i], NULL))
+		{
+			G_CurePoison(touchClients[i]);
+		}
+
 		// add the medicheal event (to get sound, etc.)
 		G_AddPredictableEvent(other, EV_ITEM_PICKUP, ITEM_HEALTH_CABINET);
 
