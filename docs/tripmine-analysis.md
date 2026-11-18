@@ -167,3 +167,15 @@ need no engine or protocol change. Clients must have the matching pk3, which the
   - **Crosshair:** shows "X's Tripmine".
   - **Effects:** explosion, view model and the auto-switch to pliers after placing all come from the
     landmine weapon file.
+- **After in-game testing:**
+  - **Model:** NitMod's tripmine model, view model, textures and selected icon are bundled, credited in
+    `etmain/models/multiplayer/tripmine/CREDITS.txt`. They are loaded through our own
+    `weapons/tripmine.weap`, oriented forward along the wall normal and kept upright.
+  - **Ownership:** the mine is owned by `ENTITYNUM_WORLD` from the moment it is placed. Traces skip
+    entities owned by the tracing player, so the planter's own pliers could not reach it.
+    `g_tripmineDebug 1` showed every pliers trace hitting the wall behind it.
+  - **Pliers hit box:** pliers use a 12-unit real hit box, like landmines.
+  - **Arming delay:** the beam goes live `g_tripmineArmTime` ms after arming (default 3000, minimum
+    250), so the planter can step out of it. NitMod used 250 ms.
+  - **Debugging:** `g_tripmineDebug 1` prints placement, pliers, arming, expiry, priming and trigger
+    steps to the server console.
