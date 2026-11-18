@@ -9,8 +9,11 @@
 @setLocal EnableDelayedExpansion
 
 :: variables
-SET game_homepath=%USERPROFILE%\Documents\ETLegacy
-SET game_basepath=%USERPROFILE%\Documents\ETLegacy-Build
+:: Resolve the real Documents folder (it may be redirected away from %USERPROFILE%)
+for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('MyDocuments')"`) do SET "docs_dir=%%D"
+IF NOT DEFINED docs_dir SET "docs_dir=%USERPROFILE%\Documents"
+SET game_homepath=!docs_dir!\ETLegacy
+SET game_basepath=!docs_dir!\ETLegacy-Build
 SET modname=legacy
 SET build_type=Release
 SET batloc=%~dp0
@@ -344,7 +347,7 @@ GOTO:EOF
 	set SCRIPT="%TEMP%\%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs"
 
 	echo Set oWS = WScript.CreateObject("WScript.Shell") >> !SCRIPT!
-	echo sLinkFile = "%USERPROFILE%\Desktop\%~1.lnk" >> !SCRIPT!
+	echo sLinkFile = oWS.SpecialFolders("Desktop") ^& "\%~1.lnk" >> !SCRIPT!
 	echo Set oLink = oWS.CreateShortcut(sLinkFile) >> !SCRIPT!
 	echo oLink.TargetPath = "%~2" >> !SCRIPT!
 	echo oLink.WorkingDirectory = "%~3" >> !SCRIPT!
