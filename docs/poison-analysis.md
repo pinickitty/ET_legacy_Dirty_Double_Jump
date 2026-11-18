@@ -152,3 +152,18 @@ The cloud is the smoke-grenade entity running a poison branch (`weapon_smokeBomb
 The poison mine is the easier of the two features you asked for, because it is almost entirely
 ETL's existing landmine plus ETL's existing smoke cloud. The syringe needs the new "poisoned"
 player state, which the cures and the client also depend on.
+
+---
+
+## 6. What the Dirty Double Jump port does (ETL 2.86.2, branch `ddj001`)
+
+Written from the behaviour above; no NitMod code was copied.
+
+| Part | Port |
+|---|---|
+| Poison gas mine | `WP_POISON_MINE` (57). Thrown and armed exactly like a landmine (the entity is a `WP_LANDMINE` marked with `s.nextWeapon`), counts towards `team_maxLandmines`. Stepping on it releases a gas cloud after 1 s: `g_poisonGasDamage` (12) per 0.8 s tick with distance falloff inside `g_poisonGasRadius` (250), players only, `MOD_POISONGASMINE`. The cloud is ETL's smoke-bomb smoke drawn as thin dark green puffs (NitMod's colour values). Switch: `g_poisonMines 1` or `g_weapons` 16384. |
+| Poisoned state | `EF_POISONED` (spare eFlags bit 23). 1 HP / 50 ms per injection, or 10 HP / 1.5 s with `g_poison` 4; `MOD_POISON`, credited to the poisoner. No hitsounds, screen blood or view kick per tick. Cleared by death, respawn and revive. `/kill` is refused while poisoned. Cheat for testing: `/poison [cure]`. |
+| Cures | the medic syringe on a poisoned teammate (any `g_poison`); health packs and cabinets with `g_poison` 2; not the poisoner's own packs with `g_poison` 8. |
+| Poison syringe | `WP_POISON_SYRINGE` (58), weapon bank 5. Any class at Light Weapons level 4 when `g_poison` is on (at spawn, or straight away on reaching level 4). 4 injections (max 8), 500 ms apart, revive range; teammates only with friendly fire on; misses are refunded. The victim gasps and gets `sprites/poisoned` over their head. |
+| NitMod cvar bits | `g_friendlyFire` 32/64/128/256 (only bit 1 enables friendly fire now), `g_weapons` 16384/32768, `g_damageweapons` 32, `g_disableComplaints` 8, `g_misc` 16, `omnibot_flags` 65536, `n_preciseLandmineTrigger`, `team_maxTripmines` 5. Not portable: `g_DMOptions` (no deathmatch), poisoned throwing knives and the poison gas canister. |
+| Assets | NitMod 2.3.5 models/textures/sprite, credited in `models/multiplayer/landmine/CREDITS_poison.txt` and `models/multiplayer/syringe/CREDITS_poison.txt`; the `.weap` files and shaders are our own. |
