@@ -1912,12 +1912,32 @@ void G_TripmineThink(gentity_t *self)
 		return;
 	}
 
+	if (g_tripmineDebug.integer)
+	{
+		G_Printf("tripmine debug: mine %i triggered by client %i (%s)\n", (int)(self - g_entities), (int)(hit - g_entities),
+		         hit == self->parent ? "owner" : "enemy");
+	}
+
 #ifdef FEATURE_OMNIBOT
 	Bot_Event_PreTriggerMine(hit - g_entities, self);
 #endif
 
 	self->think     = G_ExplodeMissile;
 	self->nextthink = level.time + FRAMETIME;
+}
+
+/**
+ * @brief G_TripmineExpire removes a mine that nobody armed in time
+ * @param[in,out] self
+ */
+void G_TripmineExpire(gentity_t *self)
+{
+	if (g_tripmineDebug.integer)
+	{
+		G_Printf("tripmine debug: mine %i expired unarmed (progress %i)\n", (int)(self - g_entities), self->health);
+	}
+
+	G_FreeEntity(self);
 }
 
 /**
@@ -1947,6 +1967,11 @@ void G_TripmineDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, i
  */
 void G_TripminePrime(gentity_t *self)
 {
+	if (g_tripmineDebug.integer)
+	{
+		G_Printf("tripmine debug: mine %i is live\n", (int)(self - g_entities));
+	}
+
 	self->health     = TRIPMINE_HEALTH;
 	self->takedamage = qtrue;
 	self->die        = G_TripmineDie;

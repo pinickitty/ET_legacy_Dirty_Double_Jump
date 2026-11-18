@@ -122,6 +122,7 @@ vmCvar_t g_airJumpScale;
 vmCvar_t g_tripmines;
 vmCvar_t team_maxTripmines;
 vmCvar_t g_tripmineTimeout;
+vmCvar_t g_tripmineDebug;
 
 vmCvar_t g_scriptName; // name of script file to run (instead of default for that map)
 
@@ -477,6 +478,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_tripmines,                       "g_tripmines",                       "0",                          CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qfalse },     // 0 = off, 1 = engineers spawn with a tripmine
 	{ &team_maxTripmines,                 "team_maxTripmines",                 "6",                          0,                                               0, qfalse, qfalse },     // armed tripmines allowed per team
 	{ &g_tripmineTimeout,                 "g_tripmineTimeout",                 "1",                          0,                                               0, qfalse, qfalse },     // 1 = remove a player's tripmines when he leaves or changes team
+	{ &g_tripmineDebug,                    "g_tripmineDebug",                    "0",                          0,                                               0, qfalse, qfalse },     // 1 = print tripmine placing/arming/trigger steps to the server console
 
 	{ &g_scriptName,                      "g_scriptName",                      "",                           CVAR_CHEAT,                                      0, qfalse, qfalse },
 

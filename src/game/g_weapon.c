@@ -1994,9 +1994,19 @@ gentity_t *weapon_tripmine_fire(gentity_t *ent)
 
 	trap_SendServerCommand(ent - g_entities, "cp \"Tripmine is set, but NOT armed!\"");
 
+	if (g_tripmineDebug.integer)
+	{
+		G_Printf("tripmine debug: placed mine %i at %s normal %s, anchor %.0f units away\n",
+		         (int)(mine - g_entities), vtos(origin), vtos(normal), tr2.fraction * TRIPMINE_ANCHOR_DIST);
+	}
+
 	return mine;
 
 cannotPlace:
+	if (g_tripmineDebug.integer)
+	{
+		G_Printf("tripmine debug: cannot place - wall trace fraction %.2f ent %i surf 0x%x\n", tr.fraction, tr.entityNum, tr.surfaceFlags);
+	}
 	trap_SendServerCommand(ent - g_entities, "cp \"Tripmine cannot be placed here\" 1");
 	G_TripmineRefundCharge(ent);
 	ent->client->sess.aWeaponStats[WS_TRIPMINE].atts--;
@@ -2018,12 +2028,22 @@ void G_ArmTripmine(gentity_t *traceEnt, gentity_t *ent)
 
 	if (G_CountTeamTripmines(ent->client->sess.sessionTeam) >= team_maxTripmines.integer)
 	{
+		if (g_tripmineDebug.integer)
+		{
+			G_Printf("tripmine debug: arm refused, team has %i armed (team_maxTripmines %i), mine %i removed\n",
+			         G_CountTeamTripmines(ent->client->sess.sessionTeam), team_maxTripmines.integer, (int)(traceEnt - g_entities));
+		}
 		trap_SendServerCommand(ent - g_entities, "cp \"Your team has too many tripmines placed\" 1");
 		G_FreeEntity(traceEnt);
 		return;
 	}
 
 	G_PrintClientSpammyCenterPrint(ent - g_entities, "Arming tripmine...");
+
+	if (g_tripmineDebug.integer)
+	{
+		G_Printf("tripmine debug: arming mine %i progress %i/%i\n", (int)(traceEnt - g_entities), traceEnt->health, LANDMINE_TASK_COMPLETED);
+	}
 
 	if (BG_IsSkillAvailable(ent->client->sess.skill, SK_EXPLOSIVES_AND_CONSTRUCTION, SK_ENGINEER_STAMINA))
 	{
@@ -2680,6 +2700,13 @@ gentity_t *Weapon_Engineer(gentity_t *ent)
 	}
 
 	trap_EngineerTrace(ent, &tr, muzzleTrace, NULL, NULL, end, ent->client->ps.clientNum, MASK_SHOT);
+
+	if (g_tripmineDebug.integer)
+	{
+		G_Printf("tripmine debug: pliers trace hit ent %i (%s) dist %.1f fraction %.2f surf 0x%x\n",
+		         tr.entityNum, g_entities[tr.entityNum].classname ? g_entities[tr.entityNum].classname : "-",
+		         VectorDistance(muzzleTrace, tr.endpos), tr.fraction, tr.surfaceFlags);
+	}
 
 	// if we are looking into void or targeting too far, try to construct the touched TOI
 	if ((tr.surfaceFlags & SURF_NOIMPACT) || tr.fraction == 1.0f || tr.entityNum == ENTITYNUM_NONE || tr.entityNum == ENTITYNUM_WORLD
@@ -4537,7 +4564,7 @@ weapFireTable_t weapFireTable[] =
     { WP_MP34,                 Bullet_Fire,                 NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,                     { { 0, 0, 0 }, { 0, 0, 0 } },                    { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,         0,       0,     0,        0,           },
     { WP_AIRSTRIKE,            NULL,                        NULL,                       NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_LINEAR,      MISSILE_PRESTEP_TIME,  { { 0, 0, 0 }, { 0, 0, 0 } },                    { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 0,         2,       0,     0,        20,          },
     // Dirty Double Jump - think = G_FreeEntity: an unarmed tripmine disappears after nextThink ms
-    { WP_TRIPMINE,             weapon_tripmine_fire,        G_FreeEntity,               NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_CORPSE, TR_STATIONARY,  0,                     { { -3.f, -3.f, -3.f }, { 3.f, 3.f, 3.f } },     { { -12.f, -12.f, -12.f }, { 12.f, 12.f, 12.f } },     MASK_MISSILESHOT, 15000,     0,       0,     0,        20,          },
+    { WP_TRIPMINE,             weapon_tripmine_fire,        G_TripmineExpire,              NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_CORPSE, TR_STATIONARY,  0,                     { { -3.f, -3.f, -3.f }, { 3.f, 3.f, 3.f } },     { { -12.f, -12.f, -12.f }, { 12.f, 12.f, 12.f } },     MASK_MISSILESHOT, 15000,     0,       0,     0,        20,          },
 };
 // *INDENT-ON*
 

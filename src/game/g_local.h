@@ -2206,6 +2206,7 @@ qboolean G_SweepForLandmines(vec3_t origin, float radius, int team);
 int G_CountTeamTripmines(team_t team);
 void G_RemoveTripmines(gentity_t *ent);
 void G_TripminePrime(gentity_t *self);
+void G_TripmineExpire(gentity_t *self);
 void G_TripmineThink(gentity_t *self);
 void G_TripmineDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, meansOfDeath_t mod);
 gentity_t *weapon_tripmine_fire(gentity_t *ent);
