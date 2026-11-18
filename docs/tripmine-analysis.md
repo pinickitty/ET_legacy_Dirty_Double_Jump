@@ -145,3 +145,15 @@ need no engine or protocol change. Clients must have the matching pk3, which the
 - **Friendly fire:** NitMod's `g_friendlyFire` bit-128 rule is dropped. Teammates never trigger
   their team's mine; the owner and enemies do.
 - **Assets:** until the mine has its own model it reuses the stock landmine `.weap`, models and icons.
+- **Server behaviour (T2), from the spec in sections 3-5:**
+  - **Placement:** 64-unit wall trace plus a 512-unit opposite-wall trace. Placing it costs the
+    same charge as a landmine, and a failed placement or a full team limit refunds that charge.
+  - **Before arming:** the mine sits 4 units off the wall and disappears after 15 s if nobody arms it.
+  - **Arming and defusing:** pliers use the landmine arm/defuse rates. Defusing an enemy mine is worth 4 XP.
+  - **Once armed:**
+    - It goes live after 250 ms (`s.time2`) with 20 HP and can be shot.
+    - The beam check runs every 100 ms over 2048 units and is blocked by an active smoke cloud.
+    - Only players set it off; NitMod's classname-hash entity case is not reproduced.
+  - **Cleanup:** with `g_tripmineTimeout` set, the owner's mines fade on disconnect, team change and shuffle.
+  - **Command map:** tripmines appear with the landmine icon.
+  - **Cvars:** `team_maxTripmines` (default 6) and `g_tripmineTimeout` (default 1).

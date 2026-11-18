@@ -107,7 +107,8 @@ static qboolean G_SnapshotCallbackExt(int entityNum, int clientNum, int clientNu
 
 	if (ent->s.eType == ET_MISSILE)
 	{
-		if (ent->s.weapon == WP_LANDMINE)
+		// tripmines are hidden from enemies by the same rules as landmines (Dirty Double Jump)
+		if (ent->s.weapon == WP_LANDMINE || ent->s.weapon == WP_TRIPMINE)
 		{
 			return G_LandmineSnapshotCallback(entityNum, clientNum);
 		}

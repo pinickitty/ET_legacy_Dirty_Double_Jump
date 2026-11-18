@@ -3610,6 +3610,7 @@ void ClientDisconnect(int clientNum)
 	{
 		G_ExplodeMines(ent);
 	}
+	G_RemoveTripmines(ent);
 	G_FadeItems(ent, MOD_SATCHEL);
 
 	// remove ourself from teamlists

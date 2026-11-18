@@ -1911,6 +1911,216 @@ void G_DisarmLandmine(gentity_t *traceEnt, gentity_t *ent)
 	}
 }
 
+/*
+======================================================================
+TRIPMINE (Dirty Double Jump) - placing, arming and defusing
+======================================================================
+*/
+
+/**
+ * @brief G_TripmineRefundCharge gives back the charge taken when the tripmine was fired
+ * @param[in,out] ent
+ */
+static void G_TripmineRefundCharge(gentity_t *ent)
+{
+	int index = BG_IsSkillAvailable(ent->client->sess.skill, GetWeaponTableData(WP_TRIPMINE)->skillBased, GetWeaponTableData(WP_TRIPMINE)->chargeTimeSkill);
+
+	ent->client->ps.classWeaponTime -= GetWeaponTableData(WP_TRIPMINE)->chargeTimeCoeff[index] * level.engineerChargeTime[ent->client->sess.sessionTeam - 1];
+}
+
+/**
+ * @brief weapon_tripmine_fire places an unarmed tripmine on the wall in front of the player
+ * @param[in,out] ent
+ * @return the mine, or NULL if it could not be placed
+ */
+gentity_t *weapon_tripmine_fire(gentity_t *ent)
+{
+	trace_t   tr, tr2;
+	vec3_t    start, end, viewForward, normal, origin;
+	gentity_t *mine;
+	team_t    team = ent->client->sess.sessionTeam;
+
+	if (!g_tripmines.integer || (team != TEAM_AXIS && team != TEAM_ALLIES))
+	{
+		return NULL;
+	}
+
+	VectorCopy(ent->client->ps.origin, start);
+	start[2] += ent->client->ps.viewheight;
+	AngleVectors(ent->client->ps.viewangles, viewForward, NULL, NULL);
+	VectorMA(start, TRIPMINE_PLACE_DIST, viewForward, end);
+
+	// a solid world wall within reach, no sky or no-impact surface
+	trap_Trace(&tr, start, NULL, NULL, end, ent->s.number, MASK_SHOT);
+
+	if (tr.fraction == 1.0f || tr.entityNum != ENTITYNUM_WORLD || (tr.surfaceFlags & (SURF_SKY | SURF_NOIMPACT)))
+	{
+		goto cannotPlace;
+	}
+
+	VectorCopy(tr.plane.normal, normal);
+
+	// the laser needs something to hit: another world surface in front of the wall
+	VectorMA(tr.endpos, TRIPMINE_WALL_OFFSET, normal, origin);
+	VectorMA(origin, TRIPMINE_ANCHOR_DIST, normal, end);
+	trap_Trace(&tr2, origin, NULL, NULL, end, ent->s.number, MASK_SHOT);
+
+	if (tr2.startsolid || tr2.fraction == 1.0f || tr2.entityNum != ENTITYNUM_WORLD || (tr2.surfaceFlags & (SURF_SKY | SURF_NOIMPACT)))
+	{
+		goto cannotPlace;
+	}
+
+	if (G_CountTeamTripmines(team) >= team_maxTripmines.integer)
+	{
+		trap_SendServerCommand(ent - g_entities, "cp \"Your team has too many tripmines placed\" 1");
+		G_TripmineRefundCharge(ent);
+		ent->client->sess.aWeaponStats[WS_TRIPMINE].atts--;
+		return NULL;
+	}
+
+	mine = G_Spawn();
+	G_PreFilledMissileEntity(mine, WP_TRIPMINE, WP_TRIPMINE, ent->s.number, team, ent->client->ps.clientNum, ent, origin, vec3_origin);
+
+	G_SetOrigin(mine, origin);
+	VectorCopy(normal, mine->s.origin2);    // laser direction
+	vectoangles(normal, mine->s.angles);    // mine faces away from the wall
+	G_SetAngle(mine, mine->s.angles);
+
+	mine->health         = 0;               // arming progress
+	mine->s.effect1Time  = 0;               // unarmed
+	mine->s.otherEntityNum = ent->s.number; // crosshair owner id
+
+	trap_LinkEntity(mine);
+
+	trap_SendServerCommand(ent - g_entities, "cp \"Tripmine is set, but NOT armed!\"");
+
+	return mine;
+
+cannotPlace:
+	trap_SendServerCommand(ent - g_entities, "cp \"Tripmine cannot be placed here\" 1");
+	G_TripmineRefundCharge(ent);
+	ent->client->sess.aWeaponStats[WS_TRIPMINE].atts--;
+	return NULL;
+}
+
+/**
+ * @brief G_ArmTripmine
+ * @param[in,out] traceEnt the tripmine to be armed
+ * @param[in,out] ent arming the tripmine
+ */
+void G_ArmTripmine(gentity_t *traceEnt, gentity_t *ent)
+{
+	if (traceEnt->s.teamNum != ent->client->sess.sessionTeam)
+	{
+		G_PrintClientSpammyCenterPrint(ent - g_entities, "You cannot arm an enemy team tripmine");
+		return;
+	}
+
+	if (G_CountTeamTripmines(ent->client->sess.sessionTeam) >= team_maxTripmines.integer)
+	{
+		trap_SendServerCommand(ent - g_entities, "cp \"Your team has too many tripmines placed\" 1");
+		G_FreeEntity(traceEnt);
+		return;
+	}
+
+	G_PrintClientSpammyCenterPrint(ent - g_entities, "Arming tripmine...");
+
+	if (BG_IsSkillAvailable(ent->client->sess.skill, SK_EXPLOSIVES_AND_CONSTRUCTION, SK_ENGINEER_STAMINA))
+	{
+		traceEnt->health += LANDMINE_ARM_RATE * 2;
+	}
+	else
+	{
+		traceEnt->health += LANDMINE_ARM_RATE;
+	}
+
+	if (traceEnt->health < LANDMINE_TASK_COMPLETED)
+	{
+		return;
+	}
+
+	trap_SendServerCommand(ent - g_entities, "cp \"Tripmine armed\" 1");
+
+	// hint task completed
+	ent->lastTaskAchievedTime = level.time;
+
+	// crosshair mine owner id
+	traceEnt->s.otherEntityNum = ent->s.number;
+
+	// hidden from enemies unless they have trap awareness or it gets spotted (same rules as landmines)
+	traceEnt->r.snapshotCallback = qtrue;
+
+	// don't allow defusing for a second, so the guy that WAS arming doesn't start defusing it
+	traceEnt->timestamp = level.time + 1000;
+	traceEnt->health    = 0;
+
+	traceEnt->s.effect1Time = 1;    // armed
+	traceEnt->s.modelindex2 = 0;    // not spotted
+	traceEnt->s.time2       = level.time + TRIPMINE_PRIME_TIME; // beam goes live (client draws it bright from then on)
+
+	traceEnt->nextthink = level.time + TRIPMINE_PRIME_TIME;
+	traceEnt->think     = G_TripminePrime;
+}
+
+/**
+ * @brief G_DisarmTripmine
+ * @param[in,out] traceEnt the tripmine to be defused
+ * @param[in,out] ent defusing the tripmine
+ */
+void G_DisarmTripmine(gentity_t *traceEnt, gentity_t *ent)
+{
+	mapEntityData_t *mEnt;
+
+	if (traceEnt->timestamp > level.time)
+	{
+		return;
+	}
+
+	if (traceEnt->count >= LANDMINE_TASK_COMPLETED)     // have to do this so we don't score multiple times
+	{
+		return;
+	}
+
+	if (BG_IsSkillAvailable(ent->client->sess.skill, SK_EXPLOSIVES_AND_CONSTRUCTION, SK_ENGINEER_STAMINA))
+	{
+		traceEnt->count += LANDMINE_DISARM_RATE * 2;
+	}
+	else
+	{
+		traceEnt->count += LANDMINE_DISARM_RATE;
+	}
+
+	G_PrintClientSpammyCenterPrint(ent - g_entities, "Defusing tripmine...");
+
+	if (traceEnt->count < LANDMINE_TASK_COMPLETED)
+	{
+		return;
+	}
+
+	// hint task completed
+	ent->lastTaskAchievedTime = level.time;
+
+	trap_SendServerCommand(ent - g_entities, "cp \"Tripmine defused\" 1");
+
+	if (traceEnt->s.teamNum != ent->client->sess.sessionTeam)
+	{
+		G_AddSkillPoints(ent, SK_EXPLOSIVES_AND_CONSTRUCTION, 4.f, "defusing an enemy tripmine");
+	}
+
+	// update our map
+	if ((mEnt = G_FindMapEntityData(&mapEntityData[0], traceEnt - g_entities)) != NULL)
+	{
+		G_FreeMapEntityData(&mapEntityData[0], mEnt);
+	}
+
+	if ((mEnt = G_FindMapEntityData(&mapEntityData[1], traceEnt - g_entities)) != NULL)
+	{
+		G_FreeMapEntityData(&mapEntityData[1], mEnt);
+	}
+
+	G_FreeEntity(traceEnt);
+}
+
 /**
  * @brief G_DisarmSatchel
  * @param[in] traceEnt the satchel to be disarmed
@@ -2510,6 +2720,17 @@ gentity_t *Weapon_Engineer(gentity_t *ent)
 		else
 		{
 			G_DisarmLandmine(traceEnt, ent);
+		}
+	}
+	else if (traceEnt->methodOfDeath == MOD_TRIPMINE && traceEnt->s.eType == ET_MISSILE)
+	{
+		if (G_LandmineUnarmed(traceEnt))
+		{
+			G_ArmTripmine(traceEnt, ent);
+		}
+		else
+		{
+			G_DisarmTripmine(traceEnt, ent);
 		}
 	}
 	else if (traceEnt->methodOfDeath == MOD_SATCHEL)
@@ -4315,8 +4536,8 @@ weapFireTable_t weapFireTable[] =
     { WP_BAZOOKA,              weapon_antitank_fire,        G_ExplodeMissile,           NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_LINEAR,      MISSILE_PRESTEP_TIME,  { { 0, 0, 0 }, { 0, 0, 0 } },                    { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 20000,     4,       0,     0,        999,         },
     { WP_MP34,                 Bullet_Fire,                 NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,                     { { 0, 0, 0 }, { 0, 0, 0 } },                    { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,         0,       0,     0,        0,           },
     { WP_AIRSTRIKE,            NULL,                        NULL,                       NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_LINEAR,      MISSILE_PRESTEP_TIME,  { { 0, 0, 0 }, { 0, 0, 0 } },                    { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 0,         2,       0,     0,        20,          },
-    // Dirty Double Jump - fire function added with the server logic (phase T2); nextThink = unarmed lifetime
-    { WP_TRIPMINE,             NULL,                        NULL,                       NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_CORPSE, TR_STATIONARY,  0,                     { { -4.f, -4.f, -3.f }, { 4.f, 4.f, 3.f } },     { { -4.f, -4.f, -3.f }, { 4.f, 4.f, 3.f } },     MASK_MISSILESHOT, 15000,     0,       20,    0,        20,          },
+    // Dirty Double Jump - think = G_FreeEntity: an unarmed tripmine disappears after nextThink ms
+    { WP_TRIPMINE,             weapon_tripmine_fire,        G_FreeEntity,               NULL,               ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_CORPSE, TR_STATIONARY,  0,                     { { -3.f, -3.f, -3.f }, { 3.f, 3.f, 3.f } },     { { -3.f, -3.f, -3.f }, { 3.f, 3.f, 3.f } },     MASK_MISSILESHOT, 15000,     0,       0,     0,        20,          },
 };
 // *INDENT-ON*
 

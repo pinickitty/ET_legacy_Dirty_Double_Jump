@@ -1186,7 +1186,7 @@ void G_CheckSpottedLandMines(void)
 					continue;
 				}
 
-				if (ent2->methodOfDeath == MOD_LANDMINE)
+				if (ent2->methodOfDeath == MOD_LANDMINE || ent2->methodOfDeath == MOD_TRIPMINE) // tripmines are spotted like landmines (Dirty Double Jump)
 				{
 					if (ent2->s.effect1Time == 1 && (ent2->s.teamNum != ent->client->sess.sessionTeam))
 					{
@@ -1220,7 +1220,7 @@ void G_CheckSpottedLandMines(void)
 										// for marker
 										// Landmine flags shouldn't block our view
 										// don't do this if the mine has been triggered.
-										if (!G_LandmineTriggered(ent->client->landmineSpotted))
+										if (!G_LandmineTriggered(ent->client->landmineSpotted) && ent->client->landmineSpotted->methodOfDeath == MOD_LANDMINE) // tripmines keep their contents
 										{
 											ent->client->landmineSpotted->s.frame    = rand() % 20;
 											ent->client->landmineSpotted->r.contents = CONTENTS_TRANSLUCENT;
@@ -1322,7 +1322,7 @@ void G_UpdateTeamMapData(void)
 			G_UpdateTeamMapData_Tank(ent);
 			break;
 		case ET_MISSILE:
-			if (ent->methodOfDeath == MOD_LANDMINE)
+			if (ent->methodOfDeath == MOD_LANDMINE || ent->methodOfDeath == MOD_TRIPMINE)
 			{
 				G_UpdateTeamMapData_LandMine(ent);
 			}

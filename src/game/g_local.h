@@ -2195,6 +2195,24 @@ int G_GetSysMessageNumber(const char *sysMsg);
 int G_CountTeamLandmines(team_t team);
 qboolean G_SweepForLandmines(vec3_t origin, float radius, int team);
 
+// tripmine (Dirty Double Jump)
+#define TRIPMINE_PLACE_DIST   64      ///< how far in front of the eyes the wall must be
+#define TRIPMINE_ANCHOR_DIST  512     ///< the laser needs another world surface within this distance
+#define TRIPMINE_WALL_OFFSET  4       ///< mine origin distance from the wall (keeps its box out of the wall)
+#define TRIPMINE_BEAM_LENGTH  2048    ///< length of the trigger line
+#define TRIPMINE_THINK_TIME   100     ///< trigger line check interval (ms)
+#define TRIPMINE_PRIME_TIME   250     ///< delay between armed and live (ms)
+#define TRIPMINE_HEALTH       20      ///< hit points of a live mine
+
+int G_CountTeamTripmines(team_t team);
+void G_RemoveTripmines(gentity_t *ent);
+void G_TripminePrime(gentity_t *self);
+void G_TripmineThink(gentity_t *self);
+void G_TripmineDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, meansOfDeath_t mod);
+gentity_t *weapon_tripmine_fire(gentity_t *ent);
+void G_ArmTripmine(gentity_t *traceEnt, gentity_t *ent);
+void G_DisarmTripmine(gentity_t *traceEnt, gentity_t *ent);
+
 void G_AddClientToFireteam(int entityNum, int leaderNum);
 void G_InviteToFireTeam(int entityNum, int otherEntityNum);
 void G_UpdateFireteamConfigString(fireteamData_t *ft);

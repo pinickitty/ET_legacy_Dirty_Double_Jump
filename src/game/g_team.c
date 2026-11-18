@@ -1643,6 +1643,7 @@ void G_shuffleTeamsXP(void)
 				G_ExplodeMines(g_entities + sortClients[i]);
 			}
 			G_FadeItems(g_entities + sortClients[i], MOD_SATCHEL);
+			G_RemoveTripmines(g_entities + sortClients[i]);
 
 			// swap primary weapon
 			if (GetWeaponTableData(cl->sess.playerWeapon)->weapEquiv)
@@ -1761,6 +1762,7 @@ void G_shuffleTeamsSR(void)
 				G_ExplodeMines(g_entities + sortClients[i]);
 			}
 			G_FadeItems(g_entities + sortClients[i], MOD_SATCHEL);
+			G_RemoveTripmines(g_entities + sortClients[i]);
 
 			// swap primary weapon
 			if (GetWeaponTableData(cl->sess.playerWeapon)->weapEquiv)

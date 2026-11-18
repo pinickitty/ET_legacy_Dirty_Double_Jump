@@ -1572,6 +1572,7 @@ qboolean SetTeam(gentity_t *ent, const char *s, qboolean force, weapon_t w1, wea
 	{
 		G_ExplodeMines(ent);
 	}
+	G_RemoveTripmines(ent);
 	G_FadeItems(ent, MOD_SATCHEL);
 
 	// remove ourself from teamlists

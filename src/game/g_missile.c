@@ -372,7 +372,7 @@ void G_ExplodeMissile(gentity_t *ent)
 
 	if (etype == ET_MISSILE)
 	{
-		if (ent->s.weapon == WP_LANDMINE)
+		if (ent->s.weapon == WP_LANDMINE || ent->s.weapon == WP_TRIPMINE)
 		{
 			mapEntityData_t *mEnt;
 
@@ -1765,6 +1765,195 @@ void G_LandminePrime(gentity_t *self)
 {
 	self->nextthink = level.time + FRAMETIME;
 	self->think     = G_LandmineThink;
+}
+
+/*
+======================================================================
+TRIPMINE (Dirty Double Jump)
+
+A wall-mounted mine. Once armed it watches a laser line along the wall
+normal (s.origin2) and explodes when a player who is not on the owner's
+team (or the owner himself) breaks the line.
+
+State: s.effect1Time 0 = unarmed, 1 = armed. s.time2 = time the beam goes live.
+health = arming progress while unarmed, hit points once armed.
+count  = defusing progress once armed.
+======================================================================
+*/
+
+/**
+ * @brief G_CountTeamTripmines
+ * @param[in] team
+ * @return number of armed tripmines of the team
+ */
+int G_CountTeamTripmines(team_t team)
+{
+	gentity_t *e = &g_entities[MAX_CLIENTS];
+	int       i;
+	int       cnt = 0;
+
+	for (i = MAX_CLIENTS ; i < level.num_entities ; i++, e++)
+	{
+		if (!e->inuse || e->s.eType != ET_MISSILE || e->methodOfDeath != MOD_TRIPMINE)
+		{
+			continue;
+		}
+
+		if (e->s.teamNum == team && e->s.effect1Time == 1)
+		{
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
+/**
+ * @brief G_RemoveTripmines removes the tripmines owned by a player (disconnect / team change)
+ * @param[in] ent
+ */
+void G_RemoveTripmines(gentity_t *ent)
+{
+	if (!g_tripmineTimeout.integer)
+	{
+		return;
+	}
+
+	// mines are placed (stationary), so they fade out like landmines
+	G_FadeItems(ent, MOD_TRIPMINE);
+}
+
+/**
+ * @brief G_TripmineBeamInSmoke
+ * @param[in] start
+ * @param[in] end
+ * @return qtrue if an active smoke grenade cloud covers part of the beam
+ */
+static qboolean G_TripmineBeamInSmoke(const vec3_t start, const vec3_t end)
+{
+	gentity_t *e = &g_entities[MAX_CLIENTS];
+	vec3_t    dir, toCloud, closest;
+	float     length, along;
+	int       i;
+
+	VectorSubtract(end, start, dir);
+	length = VectorNormalize(dir);
+
+	for (i = MAX_CLIENTS ; i < level.num_entities ; i++, e++)
+	{
+		if (!e->inuse || e->s.eType != ET_MISSILE || e->s.weapon != WP_SMOKE_BOMB)
+		{
+			continue;
+		}
+
+		// effect1Time holds the current cloud radius while the grenade is smoking
+		if (e->s.effect1Time <= 0)
+		{
+			continue;
+		}
+
+		// closest point of the beam segment to the cloud centre
+		VectorSubtract(e->r.currentOrigin, start, toCloud);
+		along = DotProduct(toCloud, dir);
+		along = Com_Clamp(0.f, length, along);
+		VectorMA(start, along, dir, closest);
+
+		if (DistanceSquared(closest, e->r.currentOrigin) < Square(e->s.effect1Time))
+		{
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
+/**
+ * @brief G_TripmineThink checks the laser line every 100 ms
+ * @param[in,out] self
+ */
+void G_TripmineThink(gentity_t *self)
+{
+	trace_t   tr;
+	vec3_t    end;
+	gentity_t *hit;
+
+	self->nextthink = level.time + TRIPMINE_THINK_TIME;
+
+	// time out the covert ops "spotted by" marker, like landmines do
+	if (level.time - self->missionLevel > 200)
+	{
+		self->s.density = 0;
+	}
+
+	VectorMA(self->r.currentOrigin, TRIPMINE_BEAM_LENGTH, self->s.origin2, end);
+
+	if (G_TripmineBeamInSmoke(self->r.currentOrigin, end))
+	{
+		return;
+	}
+
+	trap_Trace(&tr, self->r.currentOrigin, NULL, NULL, end, self->s.number, MASK_SHOT);
+
+	if (tr.entityNum >= MAX_CLIENTS)
+	{
+		return;     // only players break the beam
+	}
+
+	hit = &g_entities[tr.entityNum];
+
+	if (!hit->inuse || !hit->client || hit->health <= 0)
+	{
+		return;
+	}
+
+	// teammates never set off their team's mines, the owner does
+	if (hit->client->sess.sessionTeam == self->s.teamNum && hit != self->parent)
+	{
+		return;
+	}
+
+#ifdef FEATURE_OMNIBOT
+	Bot_Event_PreTriggerMine(hit - g_entities, self);
+#endif
+
+	self->think     = G_ExplodeMissile;
+	self->nextthink = level.time + FRAMETIME;
+}
+
+/**
+ * @brief G_TripmineDie explodes the mine when it is shot to zero health
+ * @param[in,out] self
+ * @param inflictor - unused
+ * @param[in] attacker
+ * @param damage - unused
+ * @param mod - unused
+ */
+void G_TripmineDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, meansOfDeath_t mod)
+{
+	self->takedamage = qfalse;
+	self->die        = NULL;
+	self->think      = G_ExplodeMissile;
+	self->nextthink  = level.time + FRAMETIME;
+
+	if (self->parent && self->parent->client && attacker != self->parent)
+	{
+		trap_SendServerCommand(self->parent - g_entities, "cp \"One of your tripmines has been destroyed!\" 1");
+	}
+}
+
+/**
+ * @brief G_TripminePrime makes an armed mine live
+ * @param[in,out] self
+ */
+void G_TripminePrime(gentity_t *self)
+{
+	self->health     = TRIPMINE_HEALTH;
+	self->takedamage = qtrue;
+	self->die        = G_TripmineDie;
+	self->count      = 0;   // defusing progress
+
+	self->think     = G_TripmineThink;
+	self->nextthink = level.time + FRAMETIME;
 }
 
 /**
