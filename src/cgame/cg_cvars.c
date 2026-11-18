@@ -124,6 +124,9 @@ vmCvar_t cg_autoactivate;
 vmCvar_t pmove_fixed;
 vmCvar_t pmove_msec;
 
+vmCvar_t g_airJump;
+vmCvar_t g_airJumpScale;
+
 vmCvar_t cg_gameType;
 vmCvar_t cg_bloodTime;
 vmCvar_t cg_skybox;
@@ -435,6 +438,8 @@ static cvarTable_t cvarTable[] =
 
 	{ &pmove_fixed,                           "pmove_fixed",                           "0",           CVAR_SYSTEMINFO,              0 },
 	{ &pmove_msec,                            "pmove_msec",                            "8",           CVAR_SYSTEMINFO,              0 },
+	{ &g_airJump,                             "g_airJump",                             "0",           CVAR_SYSTEMINFO,              0 }, // communicated by systeminfo
+	{ &g_airJumpScale,                        "g_airJumpScale",                        "1.4",         CVAR_SYSTEMINFO,              0 }, // communicated by systeminfo
 
 	{ &cg_spritesFollowHeads,                 "cg_spritesFollowHeads",                 "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_voiceSpriteTime,                    "cg_voiceSpriteTime",                    "6000",        CVAR_ARCHIVE,                 0 },

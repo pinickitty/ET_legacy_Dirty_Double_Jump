@@ -833,6 +833,63 @@ static qboolean PM_CheckJump(void)
 }
 
 /**
+ * @brief Allows one extra jump while airborne, controlled by pm->airJump
+ * @details The jump velocity replaces the current vertical velocity.
+ * PMF_AIRJUMPED blocks further air jumps until PM_GroundTrace finds walkable ground.
+ * @return qtrue if the player air jumped
+ */
+static qboolean PM_CheckAirJump(void)
+{
+	// 1 = anytime, 2 = only while rising, anything else = off
+	if (pm->airJump != 1 && pm->airJump != 2)
+	{
+		return qfalse;
+	}
+
+	if (pm->airJump == 2 && pm->ps->velocity[2] <= 0)
+	{
+		return qfalse;
+	}
+
+	// no jumpin when prone
+	if (pm->ps->eFlags & EF_PRONE)
+	{
+		return qfalse;
+	}
+
+	// don't allow jump until all buttons are up, and only once per airtime
+	if (pm->ps->pm_flags & (PMF_RESPAWNED | PMF_AIRJUMPED))
+	{
+		return qfalse;
+	}
+
+	if (pm->cmd.upmove < 10)
+	{
+		// not holding jump
+		return qfalse;
+	}
+
+	// must wait for jump to be released
+	if (pm->ps->pm_flags & PMF_JUMP_HELD)
+	{
+		// clear upmove so cmdscale doesn't lower running speed
+		pm->cmd.upmove = 0;
+		return qfalse;
+	}
+
+	pml.groundPlane   = qfalse;
+	pml.walking       = qfalse;
+	pm->ps->pm_flags |= (PMF_JUMP_HELD | PMF_AIRJUMPED);
+
+	pm->ps->groundEntityNum = ENTITYNUM_NONE;
+	pm->ps->velocity[2]     = JUMP_VELOCITY * pm->airJumpScale;
+
+	PM_PlayJumpAnim();
+
+	return qtrue;
+}
+
+/**
  * @brief PM_CheckWaterJump
  * @return
  */
@@ -1260,6 +1317,23 @@ static void PM_AirMove(void)
 	float     wishspeed;
 	float     scale;
 	usercmd_t cmd;
+
+	if (PM_CheckAirJump())
+	{
+		// same stamina rule as a ground jump
+		if (!(pm->cmd.serverTime - pm->pmext->jumpTime < PM_JUMP_DELAY))
+		{
+			pm->pmext->sprintTime -= 2500;
+			if (pm->pmext->sprintTime < 0)
+			{
+				pm->pmext->sprintTime = 0;
+			}
+
+			pm->pmext->jumpTime = pm->cmd.serverTime;
+		}
+
+		pm->ps->jumpTime = pm->cmd.serverTime;
+	}
 
 	PM_Friction();
 
@@ -1939,6 +2013,9 @@ static void PM_GroundTrace(void)
 
 	pml.groundPlane = qtrue;
 	pml.walking     = qtrue;
+
+	// standing on walkable ground recharges the air jump
+	pm->ps->pm_flags &= ~PMF_AIRJUMPED;
 
 	// hitting solid ground will end a waterjump
 	if (pm->ps->pm_flags & PMF_TIME_WATERJUMP)

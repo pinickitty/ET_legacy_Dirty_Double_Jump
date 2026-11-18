@@ -127,6 +127,8 @@ extern vmCvar_t cg_voiceText;
 extern vmCvar_t cg_autoactivate;
 extern vmCvar_t pmove_fixed;
 extern vmCvar_t pmove_msec;
+extern vmCvar_t g_airJump;
+extern vmCvar_t g_airJumpScale;
 
 extern vmCvar_t cg_timescale;
 

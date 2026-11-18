@@ -102,6 +102,9 @@ extern vmCvar_t g_filterBan;
 extern vmCvar_t pmove_fixed;
 extern vmCvar_t pmove_msec;
 
+extern vmCvar_t g_airJump;
+extern vmCvar_t g_airJumpScale;
+
 extern vmCvar_t g_scriptName;               ///< name of script file to run (instead of default for that map)
 extern vmCvar_t g_scriptDebug;              ///< what level of detail do we want script printing to go to.
 extern vmCvar_t g_scriptDebugLevel;         ///< filter out script debug messages from other entities
