@@ -1,0 +1,46 @@
+# Keeps this repository's master branch and release tags identical to the
+# original ET: Legacy source (https://github.com/etlegacy/etlegacy).
+#
+# master is a pure mirror: never commit to it here, so the update is always a
+# fast-forward. Mod work lives on its own branches (ddj001, air-jump-2.86.2)
+# and is rebased onto new upstream releases by hand.
+#
+# Scheduled runs only start from the repository's default branch, so this file
+# must be on the default branch (Settings > General > Default branch).
+#
+# GITHUB_TOKEN may not push commits that touch .github/workflows. When an
+# upstream update does, add a fine-grained token with "Contents" and
+# "Workflows" write access as the secret SYNC_TOKEN and the job uses it.
+name: Sync upstream ET Legacy
+
+on:
+  schedule:
+    - cron: "23 4 * * *"   # daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN || github.token }}
+
+      - name: Fast-forward master and copy tags from upstream
+        run: |
+          git remote add upstream https://github.com/etlegacy/etlegacy.git
+          git fetch --no-tags upstream master
+          git fetch upstream 'refs/tags/*:refs/tags/*'
+          git merge --ff-only upstream/master
+          git push origin master
+          git push origin --tags
