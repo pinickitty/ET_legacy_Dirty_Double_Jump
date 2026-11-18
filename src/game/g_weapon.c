@@ -524,16 +524,30 @@ gentity_t *Weapon_PoisonSyringe(gentity_t *ent)
 
 	traceEnt = &g_entities[tr.entityNum];
 
-	if (!traceEnt->client || traceEnt->health <= 0 || traceEnt->client->ps.pm_type == PM_DEAD ||
-	    traceEnt->client->ps.powerups[PW_INVULNERABLE] ||                                                  // spawn protected
-	    (!G_FriendlyFireOn() && traceEnt->client->sess.sessionTeam == ent->client->sess.sessionTeam))      // no team poisoning without friendly fire
+	if (!traceEnt->client || traceEnt->health <= 0 || traceEnt->client->ps.pm_type == PM_DEAD)
 	{
 		ent->client->ps.ammoclip[clip] += 1;
 		return NULL;
 	}
 
+	if (traceEnt->client->ps.powerups[PW_INVULNERABLE] >= level.time)
+	{
+		ent->client->ps.ammoclip[clip] += 1;
+		trap_SendServerCommand(ent - g_entities, "cp \"Target is spawn protected\" 1");
+		return NULL;
+	}
+
+	if (!G_FriendlyFireOn() && traceEnt->client->sess.sessionTeam == ent->client->sess.sessionTeam)
+	{
+		ent->client->ps.ammoclip[clip] += 1;
+		trap_SendServerCommand(ent - g_entities, "cp \"You can't poison teammates (friendly fire is off)\" 1");
+		return NULL;
+	}
+
 	G_PoisonPlayer(traceEnt, ent);
 	G_Sound(traceEnt, G_SoundIndex("sound/player/gasp.wav"));
+	trap_SendServerCommand(ent - g_entities, va("cp \"You poisoned %s^7 (x%i)\" 1", traceEnt->client->pers.netname, traceEnt->client->poisonStack));
+	trap_SendServerCommand(traceEnt - g_entities, va("cp \"You have been poisoned by %s^7!\" 1", ent->client->pers.netname));
 
 	return NULL;
 }
