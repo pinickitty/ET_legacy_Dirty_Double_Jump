@@ -1,0 +1,14 @@
+Poison syringe skins and textures, and the "poisoned" player sprite
+
+Taken unchanged from nitmod_2.3.5.pk3 (NitMod 2.3.5):
+  models/multiplayer/syringe/poison_allied.skin
+  models/multiplayer/syringe/poison_axis.skin
+  models/multiplayer/syringe/syringepoison.tga
+  gfx/misc/poisonfluid.tga
+  sprites/poisoned.tga
+
+All credit to the NitMod authors. These files are not covered by the ET: Legacy
+GPL licence; obtain the authors' permission before redistributing them.
+
+weapons/poison.weap and the poison shaders in scripts/ddj_poison.shader were written for Dirty Double Jump.
+The syringe models themselves are the stock ET syringe.

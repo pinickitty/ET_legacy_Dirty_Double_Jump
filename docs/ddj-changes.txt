@@ -1,0 +1,106 @@
+ET: Legacy - Dirty Double Jump (mod folder: legacyddj)
+=====================================================
+
+A server/client mod built on ET: Legacy 2.86.2. Only the mod libraries (qagame, cgame, ui)
+and the mod pk3 change; the official ET: Legacy 2.86.2 executables are used as they are.
+This file is copied into the pk3 as DirtyDoubleJump_<version>.txt for every build.
+
+
+1. CODE CHANGES (compared with stock ET: Legacy 2.86.2)
+-------------------------------------------------------
+
+Air jump (double jump)
+  - NitMod-style second jump in the air, off by default (g_airJump).
+  - Behaviour matches NitMod 2.3.5's double jump; the height is g_airJumpScale x a normal jump.
+
+Tripmine (engineer)
+  - New weapon WP_TRIPMINE (56), weapon bank 7 after landmine/adrenaline. Engineers spawn with
+    one when tripmines are enabled (g_tripmines 1, or g_weapons 32768).
+  - Placed on a wall, armed with pliers like a landmine; the laser goes live g_tripmineArmTime ms
+    after "Tripmine armed" so the engineer can step out of it. Anyone crossing the beam sets it
+    off (see the g_friendlyFire bits below for teammates and the owner).
+  - Armed tripmines per team are limited by team_maxTripmines; a player's tripmines are removed
+    when he leaves or changes team (g_tripmineTimeout 1).
+  - Enemy tripmines show up with Battle Sense trap awareness like landmines, and can be defused
+    with pliers. They can be shot and destroyed with g_damageweapons 32.
+  - Model and textures from NitMod 2.3.5 (credited in models/multiplayer/tripmine/CREDITS.txt).
+  - Obituaries: "tripped over X's Tripmine", "forgot where his tripmine was".
+
+Poison syringe (needle)
+  - New weapon WP_POISON_SYRINGE (57), weapon bank 5 after the medic syringe. Given at spawn
+    (or straight away when the Light Weapons level is reached) to players allowed by g_poison,
+    g_poisonClasses and g_poisonLevel. 4 injections (1 loaded + 3), up to 8 with ammo packs,
+    500 ms between injections.
+  - An injection at revive range poisons a living player: 1 HP every 50 ms (or 10 HP every
+    1.5 s with g_poison 4). A second injection stacks and multiplies the damage. The victim
+    gasps and a green poison icon is shown over poisoned players to everyone.
+  - Refused (and the injection refunded): misses, dead players, spawn-protected players, and
+    teammates unless g_poison has bit 16.
+  - Poison kills are credited to the poisoner ("was poisoned by"). Poison ticks give no hit
+    sounds, no screen blood and no view kick. Dying, respawning or being revived ends it.
+  - Cures: a medic syringe on a poisoned teammate; health packs and health cabinets with
+    g_poison 2 (with g_poison 8 not the poisoner's own packs).
+  - /kill is refused while poisoned. /poison and /poison cure: cheat command for testing.
+  - Skins/textures and the poisoned sprite from NitMod 2.3.5 (credited in
+    models/multiplayer/syringe/CREDITS_poison.txt).
+
+Other fixes and NitMod-compatible options
+  - Re-pressing a weapon bank key now steps one weapon at a time (it skipped every other slot,
+    so bank 7 could jump over the tripmine).
+  - Spotted enemy mines can be drawn red (Axis) / blue (Allies) with g_misc 16.
+  - Landmines can use a precise "touch" trigger (n_preciseLandmineTrigger 1).
+  - A friendly fire vote only switches bit 1 of g_friendlyFire and keeps the other bits.
+  - The DEVELOPMENT BUILD marker is hidden and the mod name is coloured.
+  - The mod installs into its own folder (legacyddj) with working translations.
+
+
+2. NEW CVARS
+------------
+
+g_airJump               0     0 = off, 1 = air jump any time, 2 = only while still rising
+g_airJumpScale          1.4   air jump velocity as a multiple of a normal jump
+
+g_tripmines             0     1 = engineers get a tripmine (latched: needs a map restart)
+team_maxTripmines       5     armed tripmines allowed per team (NitMod default 5)
+g_tripmineTimeout       1     1 = remove a player's tripmines when he leaves or changes team
+g_tripmineArmTime       3000  ms between "Tripmine armed" and the laser going live (min 250)
+g_tripmineDebug         0     1 = tripmine debug log in the server console, 2 = also the pliers trace
+
+g_poison                0     poison syringe bitflags, 0 = off:
+                                1  poison on: the poison syringe; the medic syringe cures poison
+                                2  health packs and health cabinets also cure poison
+                                4  slow poison: 10 HP every 1.5 s instead of 1 HP every 50 ms
+                                8  health packs from your own poisoner don't cure you
+                                16 teammates can be poisoned (default: never, whatever g_friendlyFire is)
+g_poisonClasses         0     classes that get the poison syringe, add the values:
+                                1 soldier, 2 medic, 4 engineer, 8 field ops, 16 covert ops
+                                0 = all classes (e.g. 2 = medics only, 18 = medics and covert ops)
+g_poisonLevel           4     Light Weapons level needed for the poison syringe (0 = everyone)
+
+g_weapons               0     NitMod-compatible bitflags: 32768 = tripmines (same as g_tripmines 1)
+g_damageweapons         0     NitMod-compatible bitflags: 32 = tripmines can be shot and destroyed
+n_preciseLandmineTrigger 0    1 = a landmine only goes off when your bounding box touches it
+
+
+3. CHANGED CVARS
+----------------
+
+g_friendlyFire          only bit 1 turns friendly fire on now, so these NitMod bits can be added:
+                          1   friendly fire on (all weapons)
+                          32  teammates don't set off your team's landmines
+                          64  landmines and tripmines hurt teammates even with friendly fire off
+                          128 teammates don't set off your team's tripmines
+                          256 you can't set off your own landmines or tripmines
+                          512 landmines and tripmines never hurt teammates or their owner,
+                              even with friendly fire on
+                        examples: 929 = 1+32+128+256+512 (FF on, mines safe for your team),
+                                  417 = 929-512 (FF on, mines hurt teammates)
+g_misc                  now in serverinfo so clients can read it; new bit 16 = spotted enemy
+                        mines drawn red/blue instead of white
+g_disableComplaints     new bit 8 = no complaints for tripmine teamkills
+
+
+4. NEW COMMANDS
+---------------
+
+/poison [cure]          cheat (devmap / sv_cheats): poison yourself, or cure it

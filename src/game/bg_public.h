@@ -762,6 +762,7 @@ typedef enum
 //#endif
 #define EF_AAGUN_ACTIVE     0x00400000                         ///< player is manning an AA gun
 #define EF_SPARE0           0x00800000                         ///< freed
+#define EF_POISONED         EF_SPARE0                          ///< player is poisoned (Dirty Double Jump; bit 23 still fits the 24 networked eFlags bits)
 
 // !! NOTE: only place flags that don't need to go to the client beyond 0x00800000
 #define EF_SPARE1           0x01000000                         ///< freed
@@ -916,8 +917,9 @@ typedef enum
 
 	// Dirty Double Jump weapons
 	WP_TRIPMINE,               ///< 56 Engineer wall-mounted laser mine
+	WP_POISON_SYRINGE,         ///< 57 Poison syringe, any class with Light Weapons level 4 (g_poison)
 
-	WP_NUM_WEAPONS             ///< 57
+	WP_NUM_WEAPONS             ///< 58
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -1148,6 +1150,7 @@ typedef enum
 	MOD_MP34, // Allied Sten alternative
 
 	MOD_TRIPMINE, // Engineer tripmine (Dirty Double Jump)
+	MOD_POISON, // lasting poison (EF_POISONED) from the poison syringe (Dirty Double Jump)
 
 	MOD_NUM_MODS
 
@@ -2021,6 +2024,7 @@ typedef enum item_s
 	ITEM_RED_FLAG,
 	ITEM_BLUE_FLAG,
 	ITEM_WEAPON_TRIPMINE,          ///< Dirty Double Jump - kept last so existing item indexes don't move
+	ITEM_WEAPON_POISON_SYRINGE,    ///< Dirty Double Jump
 	ITEM_MAX_ITEMS,
 
 } item_t;

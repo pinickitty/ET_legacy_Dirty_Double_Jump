@@ -1105,6 +1105,12 @@ struct gclient_s
 	vec3_t legacyDownedViewAngles;            ///< View direction at the moment player got downed.
 	qboolean legacyDownedViewAnglesValid;     ///< True when downed angles are valid for revive restore.
 	int legacyRevivesSinceRespawn;            ///< Number of revives since last full respawn.
+
+	// Dirty Double Jump - lasting poison (ps.eFlags & EF_POISONED)
+	int poisoner;                             ///< entity number of whoever poisoned us, -1 when gone
+	int poisonStartTime;                      ///< level.time of the first injection
+	int poisonStack;                          ///< number of injections, multiplies the damage
+	int poisonNextTick;                       ///< level.time of the next damage tick
 };
 
 /**
@@ -1503,6 +1509,7 @@ void Cmd_WeaponStatsLeaders_f(gentity_t *ent, unsigned int dwCommand, int value)
 void Cmd_ResetSetup_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Give_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_God_f(gentity_t *ent, unsigned int dwCommand, int value);
+void Cmd_Poison_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Nofatigue_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Notarget_f(gentity_t *ent, unsigned int dwCommand, int value);
 void Cmd_Noclip_f(gentity_t *ent, unsigned int dwCommand, int value);
@@ -2225,6 +2232,20 @@ int G_CountTeamTripmines(team_t team);
 void G_RemoveTripmines(gentity_t *ent);
 void G_TripminePrime(gentity_t *self);
 void G_TripmineExpire(gentity_t *self);
+
+// lasting poison from the poison syringe (Dirty Double Jump), g_poison bits
+#define POISON_ENABLED       1     ///< poison on: the poison syringe (see g_poisonLevel / g_poisonClasses), the medic syringe cures it
+#define POISON_CURE_HEALTH   2     ///< health packs and health cabinets cure poison
+#define POISON_SLOW          4     ///< 10 HP every 1.5 s per injection instead of 1 HP every 50 ms
+#define POISON_NO_OWN_CURE   8     ///< health packs dropped by your own poisoner don't cure you
+#define POISON_TEAM          16    ///< teammates can be poisoned (default: never, whatever g_friendlyFire is)
+
+void G_PoisonPlayer(gentity_t *victim, gentity_t *attacker);
+void G_CurePoison(gentity_t *ent);
+void G_PoisonThink(gentity_t *ent);
+qboolean G_PoisonCuredBy(gentity_t *ent, gentity_t *healer);
+qboolean G_PoisonSyringeAllowed(gclient_t *client);
+gentity_t *Weapon_PoisonSyringe(gentity_t *ent);
 void G_TripmineThink(gentity_t *self);
 void G_TripmineDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, meansOfDeath_t mod);
 gentity_t *weapon_tripmine_fire(gentity_t *ent);

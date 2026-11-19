@@ -269,6 +269,14 @@ void G_UpgradeSkill(gentity_t *ent, skillType_t skill)
 			AddWeaponToPlayer(ent->client, weaponClassInfo->weapon, classInfo->classMiscWeapons[i].startingAmmo, classInfo->classMiscWeapons[i].startingClip, qfalse);
 		}
 	}
+
+	// Dirty Double Jump - reaching g_poisonLevel in Light Weapons hands out the poison syringe straight away (otherwise at the next spawn)
+	if (skill == SK_LIGHT_WEAPONS && ent->health > 0 && !COM_BitCheck(ent->client->ps.weapons, WP_POISON_SYRINGE) &&
+	    G_PoisonSyringeAllowed(ent->client))
+	{
+		AddWeaponToPlayer(ent->client, WP_POISON_SYRINGE, 3, 1, qfalse);
+		trap_SendServerCommand(ent - g_entities, "cp \"You have a poison syringe (weapon bank 5)\" 1");
+	}
 }
 
 /**

@@ -123,6 +123,9 @@ vmCvar_t g_tripmines;
 vmCvar_t team_maxTripmines;
 vmCvar_t g_tripmineTimeout;
 vmCvar_t g_tripmineDebug;
+vmCvar_t g_poison;
+vmCvar_t g_poisonClasses;
+vmCvar_t g_poisonLevel;
 vmCvar_t g_weapons;
 vmCvar_t g_damageweapons;
 vmCvar_t n_preciseLandmineTrigger;
@@ -484,6 +487,9 @@ cvarTable_t gameCvarTable[] =
 	{ &g_tripmineTimeout,                 "g_tripmineTimeout",                 "1",                          0,                                               0, qfalse, qfalse },     // 1 = remove a player's tripmines when he leaves or changes team
 	{ &g_tripmineArmTime,                     "g_tripmineArmTime",                     "3000",                          0,                                               0, qfalse, qfalse },     // ms between "Tripmine armed" and the laser going live (time for the engineer to step out of it), min 250
 	{ &g_tripmineDebug,                    "g_tripmineDebug",                    "0",                          0,                                               0, qfalse, qfalse },     // 1 = print tripmine placing/arming/trigger steps to the server console, 2 = also the per-frame pliers trace
+	{ &g_poison,                          "g_poison",                          "0",                          CVAR_SERVERINFO,                                 0, qfalse, qfalse },     // bitflags, 0 = off. 1: poison syringe, medic syringe cures. 2: health packs and cabinets also cure. 4: slow poison (10 HP / 1.5 s). 8: the poisoner's own packs don't cure. 16: teammates can be poisoned
+	{ &g_poisonClasses,                   "g_poisonClasses",                   "0",                          CVAR_SERVERINFO,                                 0, qfalse, qfalse },     // classes that get the poison syringe: 1 soldier, 2 medic, 4 engineer, 8 field ops, 16 covert ops; 0 = all classes
+	{ &g_poisonLevel,                     "g_poisonLevel",                     "4",                          CVAR_SERVERINFO,                                 0, qfalse, qfalse },     // Light Weapons level needed for the poison syringe (0 = everyone, NitMod default 4)
 	{ &g_weapons,                         "g_weapons",                         "0",                          CVAR_SERVERINFO,                                 0, qfalse, qfalse },     // NitMod compatible bitflags: 32768 tripmines (same as g_tripmines 1)
 	{ &g_damageweapons,                   "g_damageweapons",                   "0",                          0,                                               0, qfalse, qfalse },     // NitMod compatible bitflags: 32 tripmines can be shot and destroyed
 	{ &n_preciseLandmineTrigger,          "n_preciseLandmineTrigger",          "0",                          0,                                               0, qfalse, qfalse },     // 1 = a landmine only triggers when your bounding box touches the mine's, instead of the distance check

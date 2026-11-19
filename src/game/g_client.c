@@ -1380,6 +1380,13 @@ void SetWolfSpawnWeapons(gclient_t *client)
 			AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse);
 		}
 	}
+
+	// Dirty Double Jump - poison syringe (g_poison, g_poisonClasses, g_poisonLevel; NitMod rule: Light Weapons 4).
+	// NitMod gives 4 injections (3 spare + 1 loaded), up to 8 with ammo packs.
+	if (G_PoisonSyringeAllowed(client))
+	{
+		AddWeaponToPlayer(client, WP_POISON_SYRINGE, 3, 1, qfalse);
+	}
 }
 
 /**
@@ -3336,6 +3343,9 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	{
 		G_UpdateCharacter(client);
 	}
+
+	// Dirty Double Jump - spawning or being revived always starts unpoisoned (and with no stale poisoner)
+	G_CurePoison(ent);
 
 	SetWolfSpawnWeapons(client);
 

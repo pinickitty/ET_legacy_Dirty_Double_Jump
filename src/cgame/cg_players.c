@@ -2289,6 +2289,10 @@ static void CG_PlayerSprites(centity_t *cent)
 		{
 			CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, height, numIcons++, NULL);
 		}
+		if ((cent->currentState.eFlags & EF_POISONED) && !(cent->currentState.eFlags & EF_DEAD)) // Dirty Double Jump
+		{
+			CG_PlayerFloatSprite(cent, cgs.media.poisonedShader, height, numIcons++, NULL);
+		}
 		if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED) && cgs.clientinfo[cg.clientNum].shoutcaster)
 		{
 			CG_PlayerFloatSprite(cent, cgs.media.disguisedShader, height, numIcons++, NULL);
@@ -2304,6 +2308,12 @@ static void CG_PlayerSprites(centity_t *cent)
 	if (cent->currentState.powerups & (1 << PW_INVULNERABLE))
 	{
 		CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, height, numIcons++, NULL);
+	}
+
+	// Dirty Double Jump - poisoned players (EF_POISONED) get the poison icon, seen by everyone
+	if ((cent->currentState.eFlags & EF_POISONED) && !(cent->currentState.eFlags & EF_DEAD))
+	{
+		CG_PlayerFloatSprite(cent, cgs.media.poisonedShader, height, numIcons++, NULL);
 	}
 
 	// If this client is a medic, draw a 'revive' icon over

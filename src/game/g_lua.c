@@ -3064,6 +3064,7 @@ static void registerWeaponConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, WP_MP34);                 // 54
 	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 55
 	lua_regconstinteger(vm->L, WP_TRIPMINE);             // 56
+	lua_regconstinteger(vm->L, WP_POISON_SYRINGE);       // 57
 	lua_regconstinteger(vm->L, WP_NUM_WEAPONS);
 }
 
@@ -3156,6 +3157,7 @@ static void registerModConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, MOD_BACKSTAB);
 	lua_regconstinteger(vm->L, MOD_MP34);
 	lua_regconstinteger(vm->L, MOD_TRIPMINE);
+	lua_regconstinteger(vm->L, MOD_POISON);
 
 	lua_regconstinteger(vm->L, MOD_NUM_MODS);
 }

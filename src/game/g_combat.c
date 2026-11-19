@@ -470,6 +470,9 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 		return;
 	}
 
+	// Dirty Double Jump - the poison dies with the player (a corpse doesn't keep ticking)
+	G_CurePoison(self);
+
 	switch (meansOfDeath)
 	{
 	case MOD_FALLING:
@@ -1642,8 +1645,10 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 			}
 			else if (!G_FriendlyFireOn())
 			{
-				// Dirty Double Jump - g_friendlyFire 64: landmines and tripmines hurt teammates anyway
-				if (!((g_friendlyFire.integer & FF_TEAM_LANDMINE_DAMAGE) && (mod == MOD_LANDMINE || mod == MOD_TRIPMINE)))
+				// Dirty Double Jump - g_friendlyFire 64: landmines and tripmines hurt teammates anyway;
+				// g_poison 16: poison from a teammate's syringe works without friendly fire
+				if (!((g_friendlyFire.integer & FF_TEAM_LANDMINE_DAMAGE) && (mod == MOD_LANDMINE || mod == MOD_TRIPMINE)) &&
+				    !((g_poison.integer & POISON_TEAM) && mod == MOD_POISON))
 				{
 					return;
 				}
@@ -1653,7 +1658,7 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 
 	// add to the attacker's hit counter (but only if target is a client)
 	if (attacker && attacker->client && targ->client  && targ != attacker &&
-	    mod != MOD_SWITCHTEAM && mod != MOD_SWAP_PLACES && mod != MOD_SUICIDE)
+	    mod != MOD_SWITCHTEAM && mod != MOD_SWAP_PLACES && mod != MOD_SUICIDE && mod != MOD_POISON) // poison ticks play no hitsounds
 	{
 		if (onSameTeam || (targ->client->ps.powerups[PW_OPS_DISGUISED] && (g_friendlyFire.integer & 1)))
 		{
@@ -1902,8 +1907,12 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 		{
 			targ->client->ps.persistant[PERS_ATTACKER] = ENTITYNUM_WORLD;
 		}
-		targ->client->damage_blood     += take;
-		targ->client->damage_knockback += knockback;
+		// poison ticks (up to 20 a second) give no screen blood and no view kick
+		if (mod != MOD_POISON)
+		{
+			targ->client->damage_blood     += take;
+			targ->client->damage_knockback += knockback;
+		}
 
 		if (dir)
 		{
