@@ -1642,8 +1642,8 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 			}
 			else if (!G_FriendlyFireOn())
 			{
-				// Dirty Double Jump - g_friendlyFire 64: landmines hurt teammates anyway
-				if (!((g_friendlyFire.integer & FF_TEAM_LANDMINE_DAMAGE) && mod == MOD_LANDMINE))
+				// Dirty Double Jump - g_friendlyFire 64: landmines and tripmines hurt teammates anyway
+				if (!((g_friendlyFire.integer & FF_TEAM_LANDMINE_DAMAGE) && (mod == MOD_LANDMINE || mod == MOD_TRIPMINE)))
 				{
 					return;
 				}
