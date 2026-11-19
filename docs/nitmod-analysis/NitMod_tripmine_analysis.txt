@@ -1,0 +1,107 @@
+NitMod 2.3.5 - TRIPMINE (engineer wall-mounted laser mine)
+==========================================================
+Behavioural analysis of the shipped NitMod 2.3.5 binaries (qagame.mp.i386.so and
+cgame.mp.i386.so) with Ghidra via REA. Nothing was changed. This describes behaviour,
+not code to copy.
+
+
+WHERE IT LIVES
+--------------
+A separate engineer weapon (weapon number 49 in NitMod, weapon file tripmine.weap,
+means of death MOD_TRIPMINE). Server functions:
+  FireWeapon (weapon 49)        -> nitrox_tripmine: placement checks, team limit, cost
+  G_PlaceTripmine               spawns the unarmed mine
+  Weapon_Engineer (pliers)      arms and defuses it
+  G_TripMinePrime               makes it live after arming
+  G_TripMineThink               beam check every 100 ms, fires the mine
+  Nit_WeapDie                   blows it up when shot to 0 health
+  nitmod_CountTeamTripmines / nitrox_RemoveTripmines   team limit / owner cleanup
+Client: entity type 34 is drawn by CG_Bomb (mine model + laser beam).
+
+
+PLACING IT (fire with the tripmine selected)
+--------------------------------------------
+1. Trace 64 units from the eye along the view. It must hit the WORLD (not a player or
+   entity), not sky and not a no-impact surface. Otherwise "Tripmine cannot be placed
+   here...".
+2. Trace again from that point along the wall's normal, 512 units: there must be another
+   world surface opposite (the beam needs something to reach). Otherwise the same message.
+3. Team limit: the team's ARMED mines must be below team_maxTripmines, otherwise
+   "Your team has too many tripmines placed...".
+4. Charge: chargeCost_Tripmine (per skill level, like the landmine) is taken here.
+5. The mine is spawned: on the wall at the hit point, beam direction = the wall normal,
+   small box (+-4 x +-4 x +-3), damage / splash from the weapon table, owner = planter,
+   team = planter's team + 4 (the "not armed" convention), removed after 15 s if nobody
+   arms it. Message "Tripmine is set, but NOT armed!".
+
+
+ARMING AND DEFUSING (pliers; progress 0..255 like landmine/dynamite)
+---------------------------------------------------------------------
+- Unarmed, own team: if the team is still under the limit, each pliers hit adds the
+  landmine arm-speed skill value ("Arming Tripmine...", at most every 3 s). At 255:
+  "Tripmine armed", it now counts towards the limit, and it goes live 250 ms later.
+  If the limit was reached meanwhile, the mine is removed with the "too many" message.
+- Unarmed, enemy team: "You cannot arm an enemy team tripmine...".
+- Armed (either team): pliers add the dynamite defuse-speed skill value
+  ("Disarming Tripmine..."); at 255 it is removed ("Tripmine disarmed"). Defusing an
+  ENEMY mine gives 4 Engineering XP.
+
+
+LIVE MINE
+---------
+- When primed: 20 health, can take damage, shooting it to 0 blows it up (Nit_WeapDie).
+- Every 100 ms the beam is traced from the mine along the normal, 2048 units. A smoke
+  grenade cloud over the beam stops it that tick.
+- Hit a player:
+    g_friendlyFire bit 128 set  -> a teammate who is not the owner does NOT set it off
+    g_OmniBotFlags bit 32 clear -> bots of the same team do not set it off
+    otherwise                   -> it explodes (normal missile explosion, MOD_TRIPMINE)
+  The owner and enemies always set it off.
+- Hit something else: only two specific entity classes (matched by name hash, likely
+  bodies/corpses) or an entity with an internal flag set it off; anything else is ignored.
+
+
+CLEANUP
+-------
+With n_tripmineTimeout on, all of a player's mines are removed when he disconnects,
+changes team, is shuffled, and at one more place. The owner is cleared first, so there
+is no kill credit or obituary from a removed mine.
+
+
+CLIENT (CG_Bomb)
+----------------
+- Draws the tripmine model on the wall, facing along the normal.
+- The laser is drawn only once armed, for the mine's OWN team and spectators. Enemies see
+  it only with a per-client reveal flag.
+- Traced 4096 units from the mine, drawn with the rail-core beam shader:
+  red for Axis, blue for Allies; dim (50) while priming or when revealed to an enemy,
+  full (255) when live.
+- Messages: "Tripmine is set, but NOT armed!", "Arming Tripmine...", "Tripmine armed",
+  "Disarming Tripmine...", "Tripmine disarmed", "You cannot arm an enemy team
+  tripmine...", "Your team has too many tripmines placed...", "Tripmine cannot be placed
+  here...", "One of your tripmines has been destroyed!".
+- Obituaries: "forgot where his tripmine was" (self), "'s Tripmine" (someone else's).
+  Award: "First Tripmine Kill".
+
+
+CVARS
+-----
+team_maxTripmines     default 5   armed tripmines allowed per team
+n_tripmineTimeout     default 1   remove a player's mines when he leaves / changes team
+chargeCost_Tripmine   (table)     charge cost per skill level
+g_weapons             bit 32768   tripmines on (NitMod weapon switch bits)
+g_damageweapons       default 0   NitMod "explosives can be damaged" bits, read in G_Damage
+                                  and fire_grenade (bit 32 = tripmines)
+g_friendlyFire        bit 128     teammates (not the owner) don't set off tripmines
+Reuses the stock armSpeed_LandMine / armSpeed_Dynamite skill tables.
+
+
+IN DIRTY DOUBLE JUMP (already ported, ddj002 / v2.86.2-ddj1.0)
+---------------------------------------------------------------
+WP_TRIPMINE 56 as an ET_MISSILE like ETL's landmine; g_tripmines or g_weapons 32768;
+same placement traces, team limit (team_maxTripmines 5), arming/defusing, 20 HP, 100 ms
+beam over 2048 units, smoke blocking, owner cleanup (g_tripmineTimeout). Differences:
+arming delay g_tripmineArmTime (default 3000 ms instead of 250), enemy visibility uses
+ETL's landmine rules (Trap Awareness / spotted), shootable only with g_damageweapons 32,
+and the owner does not set off his own mine with g_friendlyFire 256 (plus bits 32/64/
+512 for team rules). NitMod's model/textures are bundled with credit.

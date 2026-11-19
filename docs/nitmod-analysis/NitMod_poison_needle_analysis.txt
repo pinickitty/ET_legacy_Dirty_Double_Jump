@@ -1,0 +1,95 @@
+NitMod 2.3.5 - POISON NEEDLE (poison syringe and the "poisoned" state)
+=====================================================================
+Behavioural analysis of the shipped NitMod 2.3.5 binaries (qagame.mp.i386.so and
+cgame.mp.i386.so) with Ghidra via REA. Nothing was changed. This describes behaviour,
+not code to copy. (NitMod's poison gas mine / gas bomb are separate features and are
+not covered here.)
+
+
+WHERE IT LIVES
+--------------
+A separate weapon: WP_POISON_SYRINGE (weapon 47 in NitMod), weapon file poison.weap,
+means of death MOD_POISON (59). Server parts:
+  Weapon_Poison (from FireWeapon)   the injection
+  ClientThink_doPmove               the damage-over-time tick
+  Pickup_Health / heal_touch        cures by health packs / cabinets
+  G_AddClassSpecificTools           who gets the syringe at spawn
+  Cmd_Kill                          /kill refused while poisoned
+Client: the "poisoned" sprite over players, the gasp sound, obituaries.
+
+
+WHO GETS IT
+-----------
+At spawn, when g_poison is not 0 AND the player has Light Weapons level 4 - for any class
+(the check comes after the class-specific tools). NitMod keeps a bitmask of skill levels
+reached; the syringe check reads the level-4 bit of Light Weapons.
+
+
+INJECTING
+---------
+- Trace 64 units from the eye (same lean/prone muzzle adjustment as the medic syringe),
+  lag-compensated, against solid, bodies and corpses.
+- Needs a PLAYER who is not spawn protected.
+- Friendly fire: with friendly fire off (g_friendlyFire bit 1 clear) teammates cannot be
+  poisoned, except in gametype 8. Otherwise anyone can.
+- On a hit: the victim gets the poisoned flag (EF_POISONED), the poisoner and the start
+  time are recorded and the "stack" is 1. If the victim was already poisoned, the poisoner
+  is updated and the stack goes up by 1 - every extra injection makes it stronger.
+  A gasp sound event plays on the victim.
+- A miss refunds the dose (the clip goes back up). A hit counts in the medic stats.
+
+
+DAMAGE OVER TIME
+----------------
+Every client frame, while poisoned and once the next tick time has passed:
+
+                      default            g_poison bit 4 set ("slow poison")
+  damage per tick     1 x stack          10 x stack
+  tick interval       50 ms (20 HP/s)    1500 ms
+
+(Weapon-table overrides for the syringe's damage/interval replace these when set.)
+The damage is credited to the poisoner (MOD_POISON), so the kill is his; a poisoner who
+has left gives no attacker. Poison ticks count as no hits in the stats, play no hit
+sounds and give no damage kick.
+
+
+CURES
+-----
+- Health packs: cure when g_poison bit 2 is set; with bit 8 as well, a pack dropped by
+  YOUR OWN poisoner does not cure you. Curing clears the flag, stack and poisoner.
+- Health cabinets: cure when g_poison bit 2 is set.
+- Death / respawn: cleared with the player state.
+- /kill is refused while poisoned: "Selfkill disabled while you are poisoned."
+
+
+CVARS
+-----
+g_poison   default 0    0 = off
+             any value   poison syringe on (at Light Weapons level 4)
+             2           health packs and health cabinets cure poison
+             4           slow poison: 10 HP every 1.5 s instead of 1 HP every 50 ms
+             8           the poisoner's own health packs don't cure
+Teammate poisoning follows g_friendlyFire bit 1 (no separate bit in NitMod).
+
+
+CLIENT
+------
+- sprites/poisoned is drawn over poisoned players (read from the EF_POISONED flag).
+- sound/player/gasp.wav on injection.
+- Obituaries: "was poisoned by"; self-kill "poisonned himself" (sic).
+- Assets: weapons/poison.weap with poison skins (models/multiplayer/syringe/poison_*.skin,
+  syringepoison.tga, gfx/misc/poisonfluid.tga).
+
+The admin command !poison <player> and poisoned throwing knives (g_weapons bit 0x800)
+reuse the same poisoned state.
+
+
+IN DIRTY DOUBLE JUMP (already ported, ddj002 / v2.86.2-ddj1.0)
+---------------------------------------------------------------
+WP_POISON_SYRINGE 57 in weapon bank 5, 4 injections (max 8), 500 ms between shots; the
+same stacking, tick rates, cures, /kill block, kill credit and poisoned sprite (NitMod
+skins/sprite bundled with credit). Additions over NitMod: g_poison bit 16 = teammates can
+be poisoned (default never, whatever g_friendlyFire is), g_poisonClasses (which classes
+get it, 0 = all) and g_poisonLevel (Light Weapons level, default 4); the level is
+recalculated at spawn so servers with free skill levels count; the medic syringe cures a
+poisoned teammate; respawning always clears the poison and the poisoner.

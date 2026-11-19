@@ -1,0 +1,82 @@
+NitMod 2.3.5 - GOOMBA (landing on a player to hurt / kill them)
+===============================================================
+Behavioural analysis of the shipped NitMod 2.3.5 binaries (qagame.mp.i386.so and
+cgame.mp.i386.so) with Ghidra via REA. Nothing was changed. This describes behaviour,
+not code to copy.
+
+
+WHERE IT LIVES
+--------------
+The landing event handler (ClientEvents). The same logic is duplicated in G_FallDamage.
+
+
+WHEN IT TRIGGERS
+----------------
+It hooks the player's landing events. Stock ET only reacts to damaging falls; NitMod
+also reacts to EV_FALL_FAR, the hardest landing that does no fall damage, so smaller
+drops can goomba too. Each landing has a base value = its normal fall damage:
+
+  Landing                 Base   Stun (normally on the jumper)
+  EV_FALL_FAR (no dmg)    5      -
+  EV_FALL_DMG_10          10     250 ms
+  EV_FALL_DMG_15          15     250 ms
+  EV_FALL_DMG_25          25     500 ms
+  EV_FALL_DMG_50          50     1000 ms
+  EV_FALL_NDIE (deadly)   500    -
+
+(The stun is pm_time + PMF_TIME_KNOCKBACK: the landing slowdown.)
+
+
+WHO WAS LANDED ON
+-----------------
+- First the entity the game says you are standing on (ground entity).
+- If that is not a player, a trace 4 units straight down from your feet (solid, bodies,
+  corpses; ignoring yourself) and whatever player that hits.
+- The victim must be a player who can take damage.
+
+
+WHAT HAPPENS (g_goomba not 0 and a victim found)
+------------------------------------------------
+1. Team check: with flag 1, landing on a teammate does nothing at all - no goomba and
+   no fall damage for the jumper either. Skipped in gametype 8 (a hidden mode beyond
+   Team Death Match = 7).
+   For no-damage landings only: flag 2 = no goomba at all, flag 4 = none on teammates.
+2. The victim gets the jumper's stun (landing slowdown) and its pain sound is held back.
+3. Damage to the victim, credited to the jumper as MOD_GOOMBA, only if the jumper is alive:
+     normally       g_goomba x base
+     flag 16        the victim's whole remaining health, ignoring spawn protection and
+                    god mode = instant kill
+4. The jumper:
+     no-damage landing (base 5)  takes nothing; a goomba sound event plays at the victim
+     damaging landing            takes 20% of the normal fall damage (nothing with flag 8)
+
+If g_goomba is 0 or there is no victim: normal fall damage and stun for the jumper.
+
+
+CVARS
+-----
+g_goomba        default 10   damage multiplier on the landing's base; 0 = off
+g_goombaFlags   default 25 (= 1 + 8 + 16)
+                  1   never on teammates (except gametype 8)
+                  2   no goomba from no-damage landings, only from damaging falls
+                  4   no goomba on teammates from no-damage landings
+                  8   the jumper takes no fall damage
+                  16  instant kill
+
+
+REWARDS AND DISPLAY
+-------------------
+- A goomba kill gives the jumper +5 Battle Sense XP.
+- A per-player goomba counter, shown in the stats as "Goomba Kills: %d".
+- "First Goomba Kill" global announcement and the end-of-map award
+  "Fat ass (most goombas)".
+- Obituary: "was stomped by".
+
+
+NOTES FOR A DIRTY DOUBLE JUMP PORT
+----------------------------------
+- ET: Legacy's pmove never sends EV_FALL_FAR: below the damage height (delta 38.75) it
+  only sends EV_FALL_SHORT, so a port needs its own minimum height for a no-damage
+  goomba. NitMod's exact threshold for that landing was not checked.
+- ET: Legacy's fall code has no landing stun and gibs on NDIE, so the stun hand-over and
+  the 500 base would be new behaviour.

@@ -1,0 +1,75 @@
+NitMod 2.3.5 - DOUBLE JUMP (a second jump in the air)
+=====================================================
+Behavioural analysis of the shipped NitMod 2.3.5 binaries (qagame.mp.i386.so and
+cgame.mp.i386.so) with Ghidra via REA. Nothing was changed. This describes behaviour,
+not code to copy.
+
+
+WHERE IT LIVES
+--------------
+No separate function: the logic is inlined at the top of the player movement code for
+the air (PM_AirMove), before friction is applied. One extra line in the ground check
+(PM_GroundTrace) recharges it. The movement code is compiled into both the server and
+the client library (as in stock ET), so client prediction runs the same rule.
+
+
+WHEN IT TRIGGERS (all must be true)
+-----------------------------------
+- g_doubleJump is not 0.
+- The player is not prone.
+- Not just respawned (PMF_RESPAWNED) and not already air-jumped this time in the air
+  (a NitMod flag bit 128 in pm_flags).
+- g_doubleJump 2 only: the player is still rising (vertical speed > 0).
+  g_doubleJump 1: any time in the air (rising or falling).
+- The jump key is pressed (upmove >= 10).
+- The jump key was released since the last jump: if it is still held from the ground
+  jump, the press is swallowed (upmove set to 0) and nothing happens, so a player must
+  let go and press jump again.
+
+
+WHAT HAPPENS
+------------
+1. Ground contact is cleared (no ground plane, not walking, ground entity = none).
+2. Flags set: jump held, and the "already air-jumped" bit 128.
+3. Vertical speed is SET (not added) to  g_DJHeight x 270  (270 = normal jump speed).
+   With the default 1.4 that is 378 units/s, i.e. a higher jump than a ground jump,
+   whatever the player's vertical speed was (a falling player is launched upwards).
+4. The jump animation event plays (the backwards-jump animation when moving backwards).
+5. Stamina: if at least 850 ms (PM_JUMP_DELAY) passed since the last charged jump,
+   2500 sprint stamina is taken (not below 0) and that timer restarts. The jump time is
+   recorded either way - the same rule as a ground jump.
+6. Normal air movement then continues.
+(A water-move branch exists in the block but can never run: air movement is only used
+ out of water.)
+
+
+RECHARGE
+--------
+The "already air-jumped" bit is cleared only when landing on WALKABLE ground - after the
+steep-slope and kick-off checks - so touching a steep slope or a wall does not give the
+jump back. One air jump per time in the air.
+
+
+CVARS
+-----
+g_doubleJump   default 0     0 off, 1 any time in the air, 2 only while still rising
+g_DJHeight     default 1.4   air jump speed as a multiple of a normal jump (270)
+
+Neither is a systeminfo cvar: NitMod sends both to clients with its own server commands
+(nitmod_SimpleCS / nitmod_SendNCS, called from G_InitGame, G_UpdateCvars and
+ClientCommand; the height as text with 3 decimals). The client stores them and feeds its
+prediction movement code.
+
+
+NETWORK / COMPATIBILITY
+-----------------------
+pm_flags is networked with 16 bits and bit 128 is unused in stock ET: Legacy, so no
+playerState or protocol change is needed.
+
+
+IN DIRTY DOUBLE JUMP (already ported)
+-------------------------------------
+Implemented from this behaviour as g_airJump (= g_doubleJump) and g_airJumpScale
+(= g_DJHeight), sent as standard systeminfo cvars (the client gets the exact value).
+Same gate, speed, stamina and recharge rules; the animation uses ET: Legacy's own jump
+animation helper.
