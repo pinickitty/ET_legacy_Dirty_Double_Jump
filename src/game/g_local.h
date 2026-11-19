@@ -80,6 +80,24 @@
 #define TKFL_MINES              0x00000001
 #define TKFL_AIRSTRIKE          0x00000002
 #define TKFL_MORTAR             0x00000004
+#define TKFL_TRIPMINES          0x00000008  ///< Dirty Double Jump - no complaints for tripmine teamkills (NitMod bit)
+
+// Dirty Double Jump - NitMod g_friendlyFire bits. Only bit 1 turns friendly fire on, so the
+// mine bits can be added without enabling it.
+#define FF_ENABLED              1
+#define FF_NO_TEAM_LANDMINES    32          ///< teammates don't trip landmines
+#define FF_TEAM_LANDMINE_DAMAGE 64          ///< landmines hurt teammates even with friendly fire off
+#define FF_NO_TEAM_TRIPMINES    128         ///< teammates don't set off tripmines
+#define FF_NO_OWN_LANDMINES     256         ///< you can't set off your own landmines
+#define FF_NO_TEAM_MINE_DAMAGE  512         ///< landmines and tripmines never hurt teammates or their owner (Dirty Double Jump)
+#define G_FriendlyFireOn()      (g_friendlyFire.integer & FF_ENABLED)
+
+// Dirty Double Jump - NitMod g_weapons bit, an alternative to g_tripmines
+#define WPF_TRIPMINES           32768
+#define G_TripminesOn()         (g_tripmines.integer || (g_weapons.integer & WPF_TRIPMINES))
+
+// Dirty Double Jump - NitMod g_damageweapons bits
+#define DMGW_TRIPMINES          32          ///< tripmines can be shot and destroyed
 
 /**
  * @enum moverState_t
@@ -2720,6 +2738,7 @@ void G_MapVoteInfoRead(void);
 
 // g_misc flags
 #define G_MISC_SHOVE_Z  BIT(0)
+// BIT(4) (16) is read by cgame from serverinfo: G_MISC_COLOURED_MINES in bg_public.h
 
 // g_voting flags
 #define VOTEF_USE_TOTAL_VOTERS      1   ///< use total voters instead of total players to decide if a vote passes

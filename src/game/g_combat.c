@@ -368,6 +368,7 @@ qboolean G_CheckComplaint(gentity_t *self, gentity_t *inflictor, gentity_t *atta
 				{
 					if (!(meansOfDeath == MOD_LANDMINE && (g_disableComplaints.integer & TKFL_MINES)) &&
 					    !((meansOfDeath == MOD_ARTY || meansOfDeath == MOD_AIRSTRIKE) && (g_disableComplaints.integer & TKFL_AIRSTRIKE)) &&
+					    !(meansOfDeath == MOD_TRIPMINE && (g_disableComplaints.integer & TKFL_TRIPMINES)) && // Dirty Double Jump
 					    !((meansOfDeath == MOD_MORTAR || meansOfDeath == MOD_MORTAR2) && (g_disableComplaints.integer & TKFL_MORTAR)))
 					{
 						trap_SendServerCommand(self - g_entities, va("complaint %i", attacker->s.number));
@@ -1619,6 +1620,15 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 		VectorNormalize(dir);
 	}
 
+	// Dirty Double Jump - g_friendlyFire 512: the team's landmines and tripmines never hurt teammates (or the owner),
+	// even with friendly fire on. A mine keeps its planting team in s.teamNum (low bits) even if the owner left or switched.
+	if ((g_friendlyFire.integer & FF_NO_TEAM_MINE_DAMAGE) && targ->client && inflictor &&
+	    (mod == MOD_LANDMINE || mod == MOD_TRIPMINE) &&
+	    (team_t)(inflictor->s.teamNum & 3) == targ->client->sess.sessionTeam)
+	{
+		return;
+	}
+
 	// check for completely getting out of the damage
 	if (!(dflags & DAMAGE_NO_PROTECTION))
 	{
@@ -1630,9 +1640,13 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 			{
 				return;
 			}
-			else if (!g_friendlyFire.integer)
+			else if (!G_FriendlyFireOn())
 			{
-				return;
+				// Dirty Double Jump - g_friendlyFire 64: landmines hurt teammates anyway
+				if (!((g_friendlyFire.integer & FF_TEAM_LANDMINE_DAMAGE) && mod == MOD_LANDMINE))
+				{
+					return;
+				}
 			}
 		}
 	}
@@ -1661,7 +1675,7 @@ void G_DamageExt(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec
 	}
 
 	if ((targ->flags & FL_NO_KNOCKBACK) || (dflags & DAMAGE_NO_KNOCKBACK) ||
-	    (targ->client && g_friendlyFire.integer && (onSameTeam || (attacker->client && targ->client->sess.sessionTeam == G_GetTeamFromEntity(inflictor)))))
+	    (targ->client && G_FriendlyFireOn() && (onSameTeam || (attacker->client && targ->client->sess.sessionTeam == G_GetTeamFromEntity(inflictor)))))
 	{
 		knockback = 0;
 	}

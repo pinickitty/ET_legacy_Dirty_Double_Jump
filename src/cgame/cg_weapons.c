@@ -4379,20 +4379,12 @@ void CG_WeaponBank_f(void)
 		newWeapon = cg.lastWeapSelInBank[bank];
 		CG_WeaponIndex(newWeapon, &bank, &cycle);
 
+		// Dirty Double Jump - getNextWeapInBank() already steps one slot forward, so stepping here
+		// as well skipped every other slot (bank 7 jumped over the tripmine). Stay on the current
+		// slot when re-pressing the same bank.
 		if (bank != curbank)
 		{
 			cycle -= 1;
-		}
-		else
-		{
-			if (cycle + 1 >= MAX_WEAPS_IN_BANK_MP)
-			{
-				cycle = 0;
-			}
-			else
-			{
-				cycle += 1;
-			}
 		}
 	}
 

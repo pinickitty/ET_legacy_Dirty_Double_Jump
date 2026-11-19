@@ -108,6 +108,9 @@ extern vmCvar_t g_tripmines;
 extern vmCvar_t team_maxTripmines;
 extern vmCvar_t g_tripmineTimeout;
 extern vmCvar_t g_tripmineDebug;
+extern vmCvar_t g_weapons;
+extern vmCvar_t g_damageweapons;
+extern vmCvar_t n_preciseLandmineTrigger;
 extern vmCvar_t g_tripmineArmTime;
 
 extern vmCvar_t g_scriptName;               ///< name of script file to run (instead of default for that map)

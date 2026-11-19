@@ -1187,7 +1187,7 @@ int G_FriendlyFire_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *
 	if (arg)
 	{
 		return(G_voteProcessOnOff(ent, arg, arg2, fRefereeCmd,
-		                          !!(g_friendlyFire.integer),
+		                          !!G_FriendlyFireOn(),
 		                          vote_allow_friendlyfire.integer,
 		                          dwVoteIndex));
 		// Vote action (vote has passed)
@@ -1195,7 +1195,11 @@ int G_FriendlyFire_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *
 	else
 	{
 		// Team damage (friendlyFire)
+		// Dirty Double Jump - only flip bit 1 so the NitMod mine bits (32/64/128/256/512) survive the vote
+		int ffBits = g_friendlyFire.integer & ~FF_ENABLED;
+
 		G_voteSetOnOff("Friendly Fire", "g_friendlyFire");
+		trap_Cvar_Set("g_friendlyFire", va("%i", ffBits | (trap_Cvar_VariableIntegerValue("g_friendlyFire") ? FF_ENABLED : 0)));
 	}
 
 	return G_OK;

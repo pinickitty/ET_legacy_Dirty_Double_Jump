@@ -1355,7 +1355,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 		    && client->sess.skill[classInfo->classMiscWeapons[i].skill] >= classInfo->classMiscWeapons[i].minSkillLevel)
 		{
 			// tripmines are optional (Dirty Double Jump)
-			if (weaponClassInfo->weapon == WP_TRIPMINE && !g_tripmines.integer)
+			if (weaponClassInfo->weapon == WP_TRIPMINE && !G_TripminesOn())
 			{
 				continue;
 			}

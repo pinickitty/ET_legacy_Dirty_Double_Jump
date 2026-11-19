@@ -1056,6 +1056,27 @@ static void CG_Smoker(centity_t *cent)
 	cent->lastTrailTime = cg.time;  // time we were last received at the client
 }
 
+/**
+ * @brief Dirty Double Jump - shader for an enemy mine seen with Battle Sense trap awareness: white
+ * construction shader, or with server g_misc bit 16 (NitMod) transparent red (Axis) / blue (Allies)
+ * @param[in] cent
+ * @param[in,out] ent
+ */
+static void CG_SpottedMineShader(centity_t *cent, refEntity_t *ent)
+{
+	if (!(cgs.serverMiscFlags & G_MISC_COLOURED_MINES))
+	{
+		ent->customShader = cgs.media.genericConstructionShader;
+		return;
+	}
+
+	ent->shaderRGBA[0] = cent->currentState.teamNum == TEAM_AXIS ? 255 : 0;
+	ent->shaderRGBA[1] = 0;
+	ent->shaderRGBA[2] = cent->currentState.teamNum == TEAM_AXIS ? 0 : 255;
+	ent->shaderRGBA[3] = 255;
+	ent->customShader  = cgs.media.shoutcastLandmineShader;
+}
+
 static void CG_DrawLandmine(centity_t *cent, refEntity_t *ent)
 {
 	int color = (int)255 - (255 * fabs(sin(cg.time * 0.002)));
@@ -1294,7 +1315,7 @@ static void CG_Tripmine(centity_t *cent, const weaponInfo_t *weapon)
 
 	if (trapAware)
 	{
-		ent.customShader = cgs.media.genericConstructionShader;
+		CG_SpottedMineShader(cent, &ent);
 	}
 
 	if (ent.hModel)
@@ -1535,7 +1556,7 @@ static void CG_Missile(centity_t *cent)
 						}
 						else
 						{
-							ent.customShader = cgs.media.genericConstructionShader;
+							CG_SpottedMineShader(cent, &ent);
 						}
 					}
 					else

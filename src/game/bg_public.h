@@ -1365,6 +1365,10 @@ extern weaponTable_t *GetWeaponTableData(int weaponIndex);
 // tripmine geometry shared by game and cgame (Dirty Double Jump)
 #define TRIPMINE_WALL_OFFSET  4       ///< mine origin distance from the wall (keeps its box out of the wall)
 #define TRIPMINE_BEAM_LENGTH  2048    ///< length of the trigger line
+
+/// Dirty Double Jump - g_misc bit 16 (NitMod): enemy mines seen with Battle Sense trap awareness are drawn
+/// transparent red/blue instead of white. The server cvar is in serverinfo so cgame can read it.
+#define G_MISC_COLOURED_MINES 16
 #define IS_VALID_MOD(mod) ((mod) >= MOD_UNKNOWN && (mod) < MOD_NUM_MODS)
 #define IS_VALID_AMMUNITION(a) ((a) >= MISSILE_NONE && (a) < MOD_NUM_MISIILES)
 

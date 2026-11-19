@@ -1940,7 +1940,7 @@ gentity_t *weapon_tripmine_fire(gentity_t *ent)
 	gentity_t *mine;
 	team_t    team = ent->client->sess.sessionTeam;
 
-	if (!g_tripmines.integer || (team != TEAM_AXIS && team != TEAM_ALLIES))
+	if (!G_TripminesOn() || (team != TEAM_AXIS && team != TEAM_ALLIES))
 	{
 		return NULL;
 	}
@@ -2708,7 +2708,7 @@ gentity_t *Weapon_Engineer(gentity_t *ent)
 
 	trap_EngineerTrace(ent, &tr, muzzleTrace, NULL, NULL, end, ent->client->ps.clientNum, MASK_SHOT);
 
-	if (g_tripmineDebug.integer)
+	if (g_tripmineDebug.integer >= 2)   // every frame while holding pliers: only at level 2
 	{
 		G_Printf("tripmine debug: pliers trace hit ent %i (%s) dist %.1f fraction %.2f surf 0x%x\n",
 		         tr.entityNum, g_entities[tr.entityNum].classname ? g_entities[tr.entityNum].classname : "-",
@@ -3041,7 +3041,7 @@ qboolean weapon_checkAirStrike(gentity_t *ent)
 {
 	// cancel the airstrike if FF off and player joined spec
 	// FIXME: this is a stupid workaround. Just store the parent team in the enitity itself and use that - no need to look up the parent
-	if (!g_friendlyFire.integer && ent->parent->client && ent->parent->client->sess.sessionTeam == TEAM_SPECTATOR)
+	if (!G_FriendlyFireOn() && ent->parent->client && ent->parent->client->sess.sessionTeam == TEAM_SPECTATOR)
 	{
 		ent->splashDamage = 0;  // no damage
 		ent->think        = G_ExplodeMissile;
