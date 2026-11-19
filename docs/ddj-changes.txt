@@ -5,10 +5,35 @@ A server/client mod built on ET: Legacy 2.86.2. Only the mod libraries (qagame, 
 and the mod pk3 change; the official ET: Legacy 2.86.2 executables are used as they are.
 This file is copied into the pk3 as DirtyDoubleJump_<version>.txt for every build.
 
-Version names: releases are git tags v2.86.2-ddj<major>.<minor> (first release v2.86.2-ddj1.0).
+Version names: releases are git tags v2.86.2-ddj<major>.<minor> (current release v2.86.2-ddj1.3).
 A release build shows that name in the console and serverinfo (mod_version) and is packed as
-legacy_v2.86.2-ddj1.0.pk3. Test builds made after a release show the commits since it, e.g.
-v2.86.2-ddj1.0-3-g1a2b3c4, and are packed as legacy_v2.86.2-ddj1.0_dirty.pk3.
+legacy_v2.86.2-ddj1.3.pk3. Test builds made after a release show the commits since it, e.g.
+v2.86.2-ddj1.3-3-g1a2b3c4, and are packed as legacy_v2.86.2-ddj1.3_dirty.pk3.
+
+
+0. RELEASE HISTORY
+------------------
+
+v2.86.2-ddj1.3  (branch ddj003)
+  - Tripmine HUD counter: with the tripmine selected the ammo counter shows how many tripmines
+    the team can still arm (team_maxTripmines minus the team's armed tripmines), like the
+    landmine counter. Before it always showed 1. The server sends both teams' counts and the
+    limit on the game manager entity (as it does for landmines); the shoutcast overlay shows
+    the same count.
+  - (1.1 and 1.2 were not released.)
+
+v2.86.2-ddj1.0  (branch ddj002)
+  - First release: double jump, tripmine, poison syringe (needle), NitMod-compatible
+    g_friendlyFire / g_weapons / g_damageweapons / g_misc / g_disableComplaints bits,
+    precise landmine trigger, weapon bank cycling fix. See sections 1-4.
+  - Built on the tripmine version (v2.86.2-17); the earlier poison gas mine attempt stays on
+    branch ddj001 and is not part of any release.
+
+Test server notes (configuration, not code; see misc/legacyddj-server):
+  - Runs the official ET: Legacy 2.86.2 dedicated server (etlded.x86_64) from its own mod
+    folder (fs_game legacyddj); the database is legacyddj/etl.db (db_uri), schema 4.
+  - team_maxLandmines 8, team_maxTripmines 3, team_maxRiflegrenades -1, team_riflegrenades -1,
+    team_maxSoldiers -1; Omni-Bot keeps 12 bots, difficulty 3, movement skill 3.
 
 
 1. CODE CHANGES (compared with stock ET: Legacy 2.86.2)
@@ -111,3 +136,38 @@ g_disableComplaints     new bit 8 = no complaints for tripmine teamkills
 ---------------
 
 /poison [cure]          cheat (devmap / sv_cheats): poison yourself, or cure it
+
+
+5. FILES CHANGED IN THE SOURCE (overview)
+-----------------------------------------
+
+Shared (game + cgame):
+  bg_public.h / bg_misc.c   WP_TRIPMINE (56), WP_POISON_SYRINGE (57), MOD_TRIPMINE, MOD_POISON,
+                            items, weapon and means-of-death table rows, EF_POISONED,
+                            PMF_AIRJUMPED, G_MISC_COLOURED_MINES
+  bg_pmove.c                air jump (PM_CheckAirJump in PM_AirMove, recharge in PM_GroundTrace)
+  bg_classes.c              engineer gets the tripmine (only handed out with g_tripmines)
+Server game (qagame):
+  g_weapon.c                tripmine placing / arming / defusing, poison syringe injection,
+                            medic syringe cures poison
+  g_missile.c               tripmine prime / think / beam / cleanup, g_friendlyFire mine bits,
+                            precise landmine trigger
+  g_active.c                poisoned state and poison damage over time
+  g_combat.c                friendly fire bits (1/64/512), poison damage handling, complaints
+  g_client.c / g_stats.c    hand out tripmine and poison syringe (class / level rules)
+  g_items.c / g_trigger.c   health packs and cabinets cure poison
+  g_cmds.c / g_cmds_ext.c   /kill blocked while poisoned, /poison cheat
+  g_vote.c                  friendly fire vote keeps the extra bits
+  g_main.c / g_script.c     team landmine and tripmine counts sent to clients
+  g_cvars.c / g_local.h     the new cvars and bit definitions
+Client game (cgame):
+  cg_weapons.c              weapon banks (tripmine bank 7, needle bank 5), bank cycling fix,
+                            tripmine and needle drawing
+  cg_ents.c                 tripmine model and laser beam, coloured spotted mines
+  cg_players.c / cg_main.c  poisoned icon over players
+  cg_draw_hud.c             landmine-style tripmine counter
+  cg_shoutcastoverlay.c     same counter for shoutcasters
+  cg_predict.c / cg_cvars.c air jump settings for client prediction
+Assets (etmain/):           weapons/tripmine.weap, weapons/poison.weap, tripmine model,
+                            poison syringe skins, sprites/poisoned, scripts/ddj_poison.shader
+                            (NitMod 2.3.5 assets used with credit, see the CREDITS files)

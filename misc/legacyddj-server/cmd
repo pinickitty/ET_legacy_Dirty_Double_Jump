@@ -1,11 +1,12 @@
 #!/bin/bash
 cd /home/27965 || exit 1
-exec /usr/local/bin/etlded <><(:) \
+exec /usr/local/bin/etlded.x86_64 <><(:) \
   +set dedicated 2 \
   +set net_port 27965 \
   +set fs_basepath /home/27965 \
   +set fs_homepath /home/27965 \
   +set fs_game legacyddj \
+  +set db_uri "legacyddj/etl.db" \
   +set sv_autoUpdate 0 \
   +set com_hunkmegs 1024 \
   +set sv_maxclients 32 \

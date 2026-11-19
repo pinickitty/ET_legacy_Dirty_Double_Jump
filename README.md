@@ -4,7 +4,7 @@ ET: Legacy [![CI](https://github.com/etlegacy/etlegacy/actions/workflows/ci.yml/
 
 *A second breath of life for Wolfenstein: Enemy Territory*
 
-> **This fork: ET: Legacy - Dirty Double Jump** (mod folder `legacyddj`, release `v2.86.2-ddj1.0`).
+> **This fork: ET: Legacy - Dirty Double Jump** (mod folder `legacyddj`, release `v2.86.2-ddj1.3`, branch `ddj003`).
 > Adds a NitMod-style double jump, the engineer tripmine, the poison needle and NitMod-compatible
 > mine/friendly-fire options to the ET: Legacy 2.86.2 mod.
 > All changes and cvar bits: [docs/ddj-changes.txt](docs/ddj-changes.txt).
