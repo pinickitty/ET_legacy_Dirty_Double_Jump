@@ -88,7 +88,7 @@
 #define FF_NO_TEAM_LANDMINES    32          ///< teammates don't trip landmines
 #define FF_TEAM_LANDMINE_DAMAGE 64          ///< landmines hurt teammates even with friendly fire off
 #define FF_NO_TEAM_TRIPMINES    128         ///< teammates don't set off tripmines
-#define FF_NO_OWN_LANDMINES     256         ///< you can't set off your own landmines
+#define FF_NO_OWN_LANDMINES     256         ///< you can't set off your own landmines or tripmines
 #define FF_NO_TEAM_MINE_DAMAGE  512         ///< landmines and tripmines never hurt teammates or their owner (Dirty Double Jump)
 #define G_FriendlyFireOn()      (g_friendlyFire.integer & FF_ENABLED)
 

@@ -1929,8 +1929,14 @@ void G_TripmineThink(gentity_t *self)
 		return;
 	}
 
-	// teammates set off the team's tripmines unless g_friendlyFire has bit 128 (NitMod); the owner always does
+	// teammates set off the team's tripmines unless g_friendlyFire has bit 128 (NitMod)
 	if ((g_friendlyFire.integer & FF_NO_TEAM_TRIPMINES) && hit->client->sess.sessionTeam == self->s.teamNum && hit != self->parent)
+	{
+		return;
+	}
+
+	// the owner sets off his own tripmine unless g_friendlyFire has bit 256 (same bit as for own landmines)
+	if ((g_friendlyFire.integer & FF_NO_OWN_LANDMINES) && hit == self->parent)
 	{
 		return;
 	}
