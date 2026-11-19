@@ -5,6 +5,11 @@ A server/client mod built on ET: Legacy 2.86.2. Only the mod libraries (qagame, 
 and the mod pk3 change; the official ET: Legacy 2.86.2 executables are used as they are.
 This file is copied into the pk3 as DirtyDoubleJump_<version>.txt for every build.
 
+Version names: releases are git tags v2.86.2-ddj<major>.<minor> (first release v2.86.2-ddj1.0).
+A release build shows that name in the console and serverinfo (mod_version) and is packed as
+legacy_v2.86.2-ddj1.0.pk3. Test builds made after a release show the commits since it, e.g.
+v2.86.2-ddj1.0-3-g1a2b3c4, and are packed as legacy_v2.86.2-ddj1.0_dirty.pk3.
+
 
 1. CODE CHANGES (compared with stock ET: Legacy 2.86.2)
 -------------------------------------------------------
