@@ -143,6 +143,12 @@ static void CG_ShoutcastPlayerAmmoValue(clientInfo_t *ci, int *ammo, int *clips)
 				}
 			}
 		}
+		else if (curWeap == WP_TRIPMINE)
+		{
+			// Dirty Double Jump - tripmines the team can still arm
+			*ammo = !cgs.gameManager ? 0 : (ci->team == TEAM_AXIS) ? cgs.gameManager->currentState.effect1Time
+			                                                     : cgs.gameManager->currentState.effect2Time;
+		}
 		else
 		{
 			// some weapons don't draw ammo clip count text

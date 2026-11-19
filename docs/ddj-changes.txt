@@ -26,6 +26,8 @@ Tripmine (engineer)
     off (see the g_friendlyFire bits below for teammates and the owner).
   - Armed tripmines per team are limited by team_maxTripmines; a player's tripmines are removed
     when he leaves or changes team (g_tripmineTimeout 1).
+  - With the tripmine selected, the HUD ammo counter shows how many tripmines the team can still
+    arm (team_maxTripmines minus the team's armed tripmines), like the landmine counter.
   - Enemy tripmines show up with Battle Sense trap awareness like landmines, and can be defused
     with pliers. They can be shot and destroyed with g_damageweapons 32.
   - Model and textures from NitMod 2.3.5 (credited in models/multiplayer/tripmine/CREDITS.txt).

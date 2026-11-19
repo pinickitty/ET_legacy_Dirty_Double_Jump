@@ -822,6 +822,20 @@ void CG_PlayerAmmoValue(int *ammo, int *clips, int *akimboammo, int *maxammo, ve
 				}
 			}
 		}
+		else if (weap == WP_TRIPMINE)
+		{
+			// Dirty Double Jump - tripmines the team can still arm (team_maxTripmines minus armed ones), like the landmine counter
+			if (!cgs.gameManager)
+			{
+				*ammo = 0;
+			}
+			else
+			{
+				maxAmmo = cgs.gameManager->currentState.effect3Time;
+				*ammo   = (cgs.clientinfo[ps->clientNum].team == TEAM_AXIS) ? cgs.gameManager->currentState.effect1Time
+				                                                            : cgs.gameManager->currentState.effect2Time;
+			}
+		}
 		else
 		{
 			// some weapons don't draw ammo clip count text

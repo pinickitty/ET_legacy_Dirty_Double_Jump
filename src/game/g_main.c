@@ -4705,6 +4705,10 @@ void G_RunFrame(int levelTime)
 	{
 		level.gameManager->s.otherEntityNum  = MAX(0, team_maxLandmines.integer - G_CountTeamLandmines(TEAM_AXIS));
 		level.gameManager->s.otherEntityNum2 = MAX(0, team_maxLandmines.integer - G_CountTeamLandmines(TEAM_ALLIES));
+		// Dirty Double Jump - tripmines left per team and the limit, for the HUD ammo counter (like the landmines above)
+		level.gameManager->s.effect1Time = MAX(0, team_maxTripmines.integer - G_CountTeamTripmines(TEAM_AXIS));
+		level.gameManager->s.effect2Time = MAX(0, team_maxTripmines.integer - G_CountTeamTripmines(TEAM_ALLIES));
+		level.gameManager->s.effect3Time = MAX(0, team_maxTripmines.integer);
 	}
 #ifdef FEATURE_LUA
 	G_LuaHook_RunFrame(levelTime);
